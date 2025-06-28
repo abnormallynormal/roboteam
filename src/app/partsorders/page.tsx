@@ -1,11 +1,11 @@
 import Navbar from "@/components/Navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { PendingDataTable } from "./partsorders/pending-data-table";
-import { IncomingDataTable } from "./partsorders/incoming-data-table";
-import { ArrivedDataTable } from "./partsorders/arrived-data-table";
-import { PartOrder, columns } from "./partsorders/column";
-import {ArrivedPartOrder, arrivedColumns} from "./partsorders/arrived-column"
+import { PendingDataTable } from "./partsorderscomponents/pending-data-table";
+import { IncomingDataTable } from "./partsorderscomponents/incoming-data-table";
+import { ArrivedDataTable } from "./partsorderscomponents/arrived-data-table";
+import { PartOrder, columns } from "./partsorderscomponents/column";
+import {ArrivedPartOrder, arrivedColumns} from "./partsorderscomponents/arrived-column"
 import {
   Table,
   TableBody,

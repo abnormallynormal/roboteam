@@ -25,7 +25,9 @@ export default function Navbar() {
               asChild
               className={navigationMenuTriggerStyle()}
             >
-              <Link href="/dashboard" className="text-xl font-black">RoboTeam</Link>
+              <Link href="/dashboard" className="text-xl font-black">
+                RoboTeam
+              </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <div className="grid grid-cols-5">
@@ -34,7 +36,9 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/dashboard" className="text-lg">Dashboard</Link>
+                <Link href="/dashboard" className="text-lg">
+                  Dashboard
+                </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -42,7 +46,7 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/login">Budget</Link>
+                <Link href="/budgeting">Budget</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -58,7 +62,7 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/dashboard">Attendance</Link>
+                <Link href="/attendance">Attendance</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -71,7 +75,14 @@ export default function Navbar() {
             </NavigationMenuItem>
           </div>
           <NavigationMenuItem className="mr-4">
-            <Button onClick={()=>console.log("clicked")}>Log Out</Button>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/login">
+                <Button onClick={() => console.log("clicked")}>Log Out</Button>
+              </Link>
+            </NavigationMenuLink>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
