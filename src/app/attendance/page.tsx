@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Users, UserCheck, UserRoundX, Clock, Search } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -29,14 +29,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { toast } from "sonner";
+import { boolean, record } from "zod";
 
 interface Member {
   _id: string;
   name: string;
   team: string;
+  status: string;
 }
-type AttendanceStatus = "present" | "late" | "absent";
+type AttendanceStatus = "present" | "late" | "absent" | "unmarked";
 export default function Attendance() {
+  const [switchDetector, setSwitchDetector] = useState(false);
   const [totalMembers, setTotalMembers] = useState(0);
   const [totalPresent, setTotalPresent] = useState(0);
   const [totalAbsent, setTotalAbsent] = useState(0);
@@ -45,41 +48,59 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
-
+  const [members, setMembers] = useState<Member[]>([]);
   useEffect(() => {
     const fetchData = async () => {
+      let count = 0;
       const result = await fetch("/api/members/${memberId}");
       const data = await result.json();
-      setTotalMembers(data.length)
-      console.log(totalMembers)
+      setTotalMembers(data.length);
       let presentCount = 0;
       let absentCount = 0;
       let unmarkedCount = 0;
-      console.log(members)
-      members.forEach((member: any) => {
-        const dateStr = selectedDate.toDateString();
-        if (member.present.includes(dateStr) || member.late.includes(dateStr)) {
-          presentCount++;
-        } else if (member.absent.includes(dateStr)) {
-          absentCount++;
-        } else {
+      var s: AttendanceStatus;
+      const temp: Member[] = [];
+      data.forEach((member: any) => {
+        let recorded = false;
+        member.present.forEach((date: String) => {
+          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
+            presentCount++;
+            recorded = true;
+            s = "present";
+          }
+        });
+        member.late.forEach((date: String) => {
+          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
+            presentCount++;
+            recorded = true;
+            s = "late";
+          }
+        });
+        member.absent.forEach((date: String) => {
+          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
+            absentCount++;
+            recorded = true;
+            s = "absent";
+          }
+        });
+        if (!recorded) {
           unmarkedCount++;
+          s = "unmarked";
         }
+        temp.push({
+          _id: member._id,
+          name: member.name,
+          team: member.team,
+          status: s,
+        });
       });
-
+      setMembers(temp);
       setTotalPresent(presentCount);
       setTotalAbsent(absentCount);
       setTotalUnmarked(unmarkedCount);
-      
-    }
-    fetchData();  
-  },[])
-
-  // Mock data - replace with your actual data fetching
-  const members: Member[] = [
-    { _id: "685f1a71ea298df228d25fe6", name: "LeBron James", team: "82855S" },
-    // Add more members...
-  ];
+    };
+    fetchData();
+  }, [selectedDate, switchDetector]);
 
   const updateAttendance = async (
     memberId: string,
@@ -94,11 +115,15 @@ export default function Attendance() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: selectedDate.toISOString(),
+          date: new Date(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate()
+          ).toISOString(),
           status,
         }),
       });
-
+      setSwitchDetector(!switchDetector);
       if (!response.ok) {
         throw new Error("Failed to update attendance");
       }
@@ -229,45 +254,72 @@ export default function Attendance() {
             <div className="space-y-2">
               {filteredMembers.map((member) => (
                 <Card key={member._id} className=" mx-6 my-2 p-4 p-4">
-                  <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
-                    <Avatar>
-                      <AvatarImage alt={member.name} />
-                      <AvatarFallback>
-                        {member.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
+                  <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
                     <div className="grid grid-rows-2">
                       <div className="text-lg font-semibold">{member.name}</div>
                       <div className="text-sm">{member.team}</div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 items-center">
-                      <Button
-                        variant="outline"
-                        className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white active:bg-green-700 active:border-green-700"
-                        onClick={() => updateAttendance(member._id, "present")}
-                        disabled={isLoading === member._id}
-                      >
-                        {isLoading === member._id ? "..." : "Present"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white active:bg-yellow-700 active:border-yellow-700"
-                        onClick={() => updateAttendance(member._id, "late")}
-                        disabled={isLoading === member._id}
-                      >
-                        {isLoading === member._id ? "..." : "Late"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white active:bg-red-700 active:border-red-700"
-                        onClick={() => updateAttendance(member._id, "absent")}
-                        disabled={isLoading === member._id}
-                      >
-                        {isLoading === member._id ? "..." : "Absent"}
-                      </Button>
+                      {member.status === "present" ? (
+                        <Button
+                          variant="outline"
+                          className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white"
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Present"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white active:bg-green-700 active:border-green-700"
+                          onClick={() =>
+                            updateAttendance(member._id, "present")
+                          }
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Present"}
+                        </Button>
+                      )}
+                      {member.status === "late" ? (
+                        <Button
+                          variant="outline"
+                          className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white"
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Late"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white active:bg-yellow-700 active:border-yellow-700"
+                          onClick={() =>
+                            updateAttendance(member._id, "late")
+                          }
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Late"}
+                        </Button>
+                      )}
+                      {member.status === "absent" ? (
+                        <Button
+                          variant="outline"
+                          className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white"
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Absent"}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white active:bg-red-700 active:border-red-700"
+                          onClick={() =>
+                            updateAttendance(member._id, "absent")
+                          }
+                          disabled={isLoading === member._id}
+                        >
+                          {isLoading === member._id ? "..." : "Absent"}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
