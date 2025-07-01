@@ -40,6 +40,9 @@ const formSchema = z.object({
 });
 
 export default function Inventory() {
+    
+  const [collections, setCollections] = useState<any[]>([]);
+  const [switchDetector, setSwitchDetector] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,12 +51,22 @@ export default function Inventory() {
   });
 
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch(`/api/inventory`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: values.name,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      setSwitchDetector(!switchDetector);
+    } catch (err) {
+      console.error("Error submitting transaction:", err);
+    }
   }
-  const [collections, setCollections] = useState<any[]>([]);
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch(`/api/inventory`);
@@ -67,24 +80,9 @@ export default function Inventory() {
       });
       console.log(temp);
       setCollections(temp);
-
-      //   const temp = Object.entries(data).map(([collectionName, items]) => ({
-      //     collectionName,
-      //     items.map
-      //   }));
-
-      //   setCollections(temp);
-      //   console.log(temp);
-      //   // If you need to transform further
-      //   const tempData = temp.map((collection) => ({
-      //     items: collection.items,
-      //   }));
-
-      // Do something with tempData
-      //   console.log(tempData);
     };
     fetchData();
-  }, []);
+  }, [switchDetector]);
   return (
     <div>
       <Navbar />

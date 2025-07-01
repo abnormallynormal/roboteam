@@ -36,18 +36,24 @@ export async function POST(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-
     const { name } = await request.json();
-
     const db = client.db("inventory");
     const result = await db.createCollection(name);
+    const collections = await db.listCollections({ name }).toArray();
+    if (collections.length > 0) {
+      return NextResponse.json(
+        { error: "Collection already exists" },
+        { status: 409 }
+      );
+    }
+
     await db.collection(name).insertMany([
-      { name: "82855G", value: 100 },
-      { name: "82855S", value: 200 },
-      { name: "82855T", value: 300 },
-      { name: "82855X", value: 300 },
-      { name: "82855Y", value: 300 },
-      { name: "82855Z", value: 300 },
+      { team: "82855G", items: [] },
+      { team: "82855S", items: [] },
+      { team: "82855T", items: [] },
+      { team: "82855X", items: [] },
+      { team: "82855Y", items: [] },
+      { team: "82855Z", items: [] },
     ]);
     return NextResponse.json(result);
   } catch (error) {

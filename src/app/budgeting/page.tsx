@@ -217,7 +217,7 @@ export default function Budgeting() {
                 <div className="mt-1 text-sm">From sponsors and grants</div>
               </div>
               <div>
-                <TrendingUp className="text-green-700"/>
+                <TrendingUp className="text-green-700" />
               </div>
             </div>
           </Card>
@@ -354,58 +354,58 @@ export default function Budgeting() {
                     <FormLabel>Transaction Type</FormLabel>
                     <FormControl>
                       <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? category.find(
-                                  (category) => category.value === field.value
-                                )?.label
-                              : "Select category"}
-                            <ChevronsUpDown className="opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Search category..."
-                            className="h-9"
-                          />
-                          <CommandList>
-                            <CommandEmpty>No category found.</CommandEmpty>
-                            <CommandGroup>
-                              {category.map((category) => (
-                                <CommandItem
-                                  value={category.label}
-                                  key={category.value}
-                                  onSelect={() => {
-                                    form.setValue("category", category.value);
-                                  }}
-                                >
-                                  {category.label}
-                                  <Check
-                                    className={cn(
-                                      "ml-auto",
-                                      category.value === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? category.find(
+                                    (category) => category.value === field.value
+                                  )?.label
+                                : "Select category"}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search category..."
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {category.map((category) => (
+                                  <CommandItem
+                                    value={category.label}
+                                    key={category.value}
+                                    onSelect={() => {
+                                      form.setValue("category", category.value);
+                                    }}
+                                  >
+                                    {category.label}
+                                    <Check
+                                      className={cn(
+                                        "ml-auto",
+                                        category.value === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -515,7 +515,9 @@ export default function Budgeting() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">Submit</Button>
+              <Button type="submit" className="w-full">
+                Submit
+              </Button>
             </form>
           </Form>
         </Card>
