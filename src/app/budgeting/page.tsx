@@ -1,9 +1,17 @@
 "use client";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ChevronsUpDown , Check } from "lucide-react";
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  ChevronsUpDown,
+  Check,
+} from "lucide-react";
 import Calendar18 from "@/components/calendar-18";
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 import {
   Select,
@@ -52,16 +60,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 const category = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const
+  { label: "Parts Orders", value: "parts-orders" },
+  { label: "Tournament Fees", value: "tournament" },
+  { label: "Food", value: "food" },
+  { label: "Sponsorships", value: "sponsors" },
+  { label: "Grants", value: "grants" },
+  { label: "Miscellaneous", value: "misc" },
+] as const;
+
+interface Transaction {
+  _id: string;
+  type: "expense" | "revenue";
+  description: string;
+  amount: number;
+  category: (typeof category)[number]["value"];
+  date: string;
+}
 
 const formSchema = z.object({
   type: z.string({
@@ -71,13 +85,44 @@ const formSchema = z.object({
     message: "Please enter a description.",
   }),
   amount: z.number().min(0.01, {
-    message: "Please enter an amount.",
+    message: "Please enter an amount greater than 0.00.",
   }),
   category: z.string({
     required_error: "Please select a category",
   }),
 });
 export default function Budgeting() {
+  // const filteredTransactions = transactions.filter((transaction) =>
+  //   transaction.description
+  //     .toLowerCase()
+  //     .includes(formValues.description.toLowerCase())
+  // );
+  const [switchDetector, setSwitchDetector] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [budget, setBudget] = useState(0);
+  const [revenue, setRevenue] = useState(0);
+  const [expense, setExpense] = useState(0);
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await fetch(`/api/transactions/{transactionId}`);
+      const data = await result.json();
+      const temp: Transaction[] = [];
+
+      data.forEach((transaction: any) => {
+        temp.push({
+          _id: transaction._id,
+          type: transaction.type,
+          description: transaction.description,
+          amount: transaction.amount,
+          category: transaction.category,
+          date: transaction.date,
+        });
+      });
+      setTransactions(temp);
+    };
+    fetchData();
+  }, [switchDetector]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -87,9 +132,38 @@ export default function Budgeting() {
       category: undefined,
     },
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const onSubmit = async (
+    values: z.infer<typeof formSchema>
+    // transactionId: string
+  ) => {
+    try {
+      const response = await fetch(`/api/transactions/{id}`, {
+        method: "POST",
+        body: JSON.stringify({
+          type: values.type,
+          description: values.description,
+          amount: values.amount,
+          category: values.category,
+          date: new Date().toISOString(),
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (values.type === "expense") {
+        setExpense((prev) => prev + values.amount);
+        setBalance((prev) => prev - values.amount);
+      }
+      if (values.type === "revenue") {
+        setRevenue((prev) => prev + values.amount);
+        setBalance((prev) => prev + values.amount);
+      }
+      console.log(response);
+      setSwitchDetector(!switchDetector);
+    } catch (err) {
+      console.error("Error submitting transaction:", err);
+    }
+  };
   return (
     <div className="bg-[#F5F5F5]">
       <div className="bg-[#FFFFFF]">
@@ -105,7 +179,12 @@ export default function Budgeting() {
             <div className="grid grid-cols-[5fr_1fr]">
               <div>
                 <div className="mb-1">Current balance</div>
-                <div className="font-bold text-3xl">6</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(balance)}
+                </div>
                 <div className="mt-1 text-sm">Available to spend</div>
               </div>
               <div>
@@ -117,7 +196,7 @@ export default function Budgeting() {
             <div className="grid grid-cols-[5fr_1fr]">
               <div>
                 <div className="mb-1">Total budget</div>
-                <div className="font-bold text-3xl">6</div>
+                <div className="font-bold text-3xl">{budget}</div>
                 <div className="mt-1 text-sm">Annual allocation</div>
               </div>
               <div>
@@ -128,12 +207,17 @@ export default function Budgeting() {
           <Card className="p-5">
             <div className="grid grid-cols-[5fr_1fr]">
               <div>
-                <div className="mb-1">Total income</div>
-                <div className="font-bold text-3xl">6</div>
+                <div className="mb-1">Total revenue</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(revenue)}
+                </div>
                 <div className="mt-1 text-sm">From sponsors and grants</div>
               </div>
               <div>
-                <TrendingUp />
+                <TrendingUp className="text-green-700"/>
               </div>
             </div>
           </Card>
@@ -141,11 +225,16 @@ export default function Budgeting() {
             <div className="grid grid-cols-[5fr_1fr]">
               <div>
                 <div className="mb-1">Total expenses</div>
-                <div className="font-bold text-3xl">6</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(expense)}
+                </div>
                 <div className="mt-1 text-sm">0% of budget</div>
               </div>
               <div>
-                <TrendingDown />
+                <TrendingDown className="text-red-700" />
               </div>
             </div>
           </Card>
@@ -155,13 +244,13 @@ export default function Budgeting() {
         <Card>
           <div className="mx-6 mb-0 text-2xl font-bold">Transactions</div>
           <div className="mx-6 grid grid-cols-[1fr_auto] gap-6">
-            <Input placeholder="Search for team members" />
+            <Input placeholder="Search for transactions" />
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <ListFilter className="b-5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuLabel>Filter by team</DropdownMenuLabel>
+                <DropdownMenuLabel>Filter transactions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <div className="flex flex-col gap-3 p-3">
                   <div className="flex items-center gap-3">
@@ -192,37 +281,66 @@ export default function Budgeting() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <Card className="mx-6 my-2 p-5">
-            <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
-              <div className="bg-green-200 rounded-full w-8 h-8 justify-items-center content-center">
-                <TrendingUp className="text-green-700 w-5 h-5" />
-              </div>
-              <div className="grid grid-rows-2">
-                <div className="text-lg font-semibold">
-                  Sponsor Contribution - Tech Corp
-                </div>
-                <div className="grid grid-cols-[auto_1fr] gap-4 content-center">
-                  <div className="text-sm">Electronics</div>
-                  <div className="grid grid-cols-[auto_1fr] content-center gap-1 ">
-                    <Calendar className="w-4 h-4 place-self-center" />
-                    <div className="text-sm">2025-06-25</div>
+          {transactions.map((transaction) => (
+            <Card key={transaction._id} className="mx-6 my-1 p-5 gap-1">
+              <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-center">
+                {transaction.type === "revenue" ? (
+                  <div className="bg-green-200 rounded-full w-8 h-8 justify-items-center content-center">
+                    <TrendingUp className="text-green-700 w-5 h-5" />
+                  </div>
+                ) : (
+                  <div className="bg-red-200 rounded-full w-8 h-8 justify-items-center content-center">
+                    <TrendingDown className="text-red-700 w-5 h-5" />
+                  </div>
+                )}
+                <div className="grid grid-rows-2">
+                  <div className="text-lg font-semibold">
+                    {transaction.description}
+                  </div>
+                  <div className="grid grid-cols-[auto_1fr] gap-4 content-center">
+                    <div className="text-sm">{transaction.category}</div>
+                    <div className="grid grid-cols-[auto_1fr] content-center gap-1 ">
+                      <Calendar className="w-4 h-4 place-self-center" />
+                      <div className="text-sm">
+                        {transaction.date.toString().substring(0, 10)}
+                      </div>
+                    </div>
                   </div>
                 </div>
+                {transaction.type === "revenue" ? (
+                  <div className="grid grid-rows-2 gap-2 content-center">
+                    <div className="font-bold text-xl text-green-700 justify-self-end">
+                      +
+                      {new Intl.NumberFormat("us-US", {
+                        style: "currency",
+                        currency: "CAD",
+                      }).format(transaction.amount)}
+                    </div>
+                    <Badge variant="secondary" className="justify-self-end">
+                      Revenue
+                    </Badge>
+                  </div>
+                ) : (
+                  <div className="grid grid-rows-2 gap-2 content-center">
+                    <div className="font-bold text-xl text-red-700 justify-self-end">
+                      -
+                      {new Intl.NumberFormat("us-US", {
+                        style: "currency",
+                        currency: "CAD",
+                      }).format(transaction.amount)}
+                    </div>
+                    <Badge variant="secondary" className="justify-self-end">
+                      Expense
+                    </Badge>
+                  </div>
+                )}
               </div>
-              <div className="grid grid-rows-2 gap-2 content-center">
-                <div className="font-bold text-xl text-green-700">
-                  +$1000.00
-                </div>
-                <Badge variant="secondary" className="justify-self-end">
-                  Income
-                </Badge>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </Card>
         <Card className="gap-2">
           <div className="mx-6 text-2xl font-bold">Add Transaction</div>
-          <div className="mx-6 mb-4 p-0">Record new income or expense</div>
+          <div className="mx-6 mb-4 p-0">Record new revenue or expense</div>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -235,18 +353,59 @@ export default function Budgeting() {
                   <FormItem>
                     <FormLabel>Transaction Type</FormLabel>
                     <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger className="w-[180px] hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="expense">Expense</SelectItem>
-                          <SelectItem value="income">Income</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? category.find(
+                                  (category) => category.value === field.value
+                                )?.label
+                              : "Select category"}
+                            <ChevronsUpDown className="opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput
+                            placeholder="Search category..."
+                            className="h-9"
+                          />
+                          <CommandList>
+                            <CommandEmpty>No category found.</CommandEmpty>
+                            <CommandGroup>
+                              {category.map((category) => (
+                                <CommandItem
+                                  value={category.label}
+                                  key={category.value}
+                                  onSelect={() => {
+                                    form.setValue("category", category.value);
+                                  }}
+                                >
+                                  {category.label}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      category.value === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -277,8 +436,16 @@ export default function Budgeting() {
                     <FormControl>
                       <Input
                         placeholder="0.00"
+                        type="number"
                         {...field}
-                        inputMode="numeric"
+                        value={field.value ?? ""} // Show empty string when undefined
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value)
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -298,7 +465,7 @@ export default function Budgeting() {
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-[200px] justify-between font-normal",
+                              "w-full justify-between font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -348,7 +515,7 @@ export default function Budgeting() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <Button type="submit" className="w-full">Submit</Button>
             </form>
           </Form>
         </Card>

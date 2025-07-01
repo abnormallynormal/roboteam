@@ -19,7 +19,7 @@ async function getData(): Promise<PartOrder[]> {
   // Fetch data from your API here.
   return [
     {
-      partName: "1x2x1x35 Aluminum C-Channel (6-pack)",
+      partName: "1x2x1x35 Aluminum C-Channel (6-pack) ",
       quantity: 5,
       price: 5,
       totalPrice: 5,

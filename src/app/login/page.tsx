@@ -124,7 +124,7 @@ export default function Login() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="">
+                      <Button type="submit" className="w-full">
                         Submit
                       </Button>
                     </form>
@@ -199,7 +199,7 @@ export default function Login() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="">
+                      <Button type="submit" className="w-full">
                         Submit
                       </Button>
                     </form>

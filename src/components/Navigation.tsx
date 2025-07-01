@@ -17,7 +17,7 @@ import {
 import { Button } from "./ui/button";
 export default function Navbar() {
   return (
-    <div>
+    <div >
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem className="ml-4">
@@ -54,7 +54,7 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/dashboard">Inventory</Link>
+                <Link href="/inventory">Inventory</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
