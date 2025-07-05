@@ -1,10 +1,15 @@
+import { RowData } from "@tanstack/react-table";
 import React, { useState, useRef, useEffect } from "react";
 
 type EditableTextProps = {
   initialText: string;
+  row: any;
+  collection: string;
+  team: string;
+  field: string
 };
 
-const EditableText = ({ initialText }: EditableTextProps) => {
+const EditableText = ({ initialText, row, collection, team, field }: EditableTextProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(initialText);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,8 +30,34 @@ const EditableText = ({ initialText }: EditableTextProps) => {
   }, [isEditing]);
 
   const handleDoubleClick = () => setIsEditing(true);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
+    try {
+      console.log(collection)
+      console.log(team)
+      const response = await fetch(`/api/add-inventory-item`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          collection: collection,
+          team: team,
+          id: row.original.id,
+          name: row.original.name,
+          category: row.original.category,
+          amount: row.original.amount,
+          description: row.original.description,
+          update: field,
+          value: e.target.value
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+    } catch (err) {
+      console.error("Error submitting transaction:", err);
+    }
+  
+  };
   const handleBlur = () => setIsEditing(false);
 
   return (
@@ -51,9 +82,7 @@ const EditableText = ({ initialText }: EditableTextProps) => {
           </span>
         </>
       ) : (
-        <span className="inline-block whitespace-nowrap py-2 mr-4">
-          {text}
-        </span>
+        <span className="inline-block whitespace-nowrap py-2 mr-4">{text}</span>
       )}
     </div>
   );

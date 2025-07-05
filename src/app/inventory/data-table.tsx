@@ -22,11 +22,15 @@ import EditableText from "@/components/ui/editable-text";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  collection: string;
+  team: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  collection,
+  team
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -43,6 +47,7 @@ export function DataTable<TData, TValue>({
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
+                if (header.column.id === "id") return null;
                 return (
                   <TableHead key={header.id}>
                     {header.isPlaceholder
@@ -64,22 +69,29 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={
-                      cell.column.id === "actions"
-                        ? "text-right py-2"
-                        : "text-left py-0"
-                    }
-                  >
-                    {cell.column.id !== "actions" ? (
-                      <EditableText initialText={cell.getValue() as string} />
-                    ) : (
-                      flexRender(cell.column.columnDef.cell, cell.getContext())
-                    )}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  if (cell.column.id === "id") return null;
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      className={
+                        cell.column.id === "actions"
+                          ? "text-right py-2"
+                          : "text-left py-0"
+                      }
+                    >
+                      {cell.column.id !== "actions" &&
+                      cell.column.id !== "id" ? (
+                        <EditableText initialText={cell.getValue() as string} row={row}  collection={collection} team={team} field={cell.column.id} />
+                      ) : cell.column.id === "actions" ? (
+                        flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )
+                      ) : null}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           ) : (

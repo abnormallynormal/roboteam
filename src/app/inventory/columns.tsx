@@ -20,13 +20,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AddItemForm from "@/components/add-item-form";
+import { ObjectId } from "mongodb";
 export type Item = {
+  id: string;
   name: string;
   category: string;
   amount: number;
   description: string;
 };
-export const columns: ColumnDef<Item>[] = [
+export const columns = (
+  collection: string,
+  team: string,
+  onItemAdded: () => void
+): ColumnDef<Item>[] => [
   {
     accessorKey: "name",
     header: "Item",
@@ -98,16 +104,20 @@ export const columns: ColumnDef<Item>[] = [
                 Add item
               </Button>
             </PopoverTrigger>
-            <PopoverContent side="bottom" avoidCollisions={false}>
-              <AddItemForm/>
+            <PopoverContent side="left" avoidCollisions={true}>
+              <AddItemForm
+                collection={collection}
+                team={team}
+                onItemAdded={onItemAdded}
+              />
             </PopoverContent>
           </Popover>
         </div>
       );
     },
     cell: ({ row }) => {
-      const payment = row.original;
-
+      const item = row.original;
+      console.log(item);
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -118,14 +128,30 @@ export const columns: ColumnDef<Item>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem>Edit item</DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.description)}
+              onClick={async () => {
+                try {
+                  const response = await fetch(`/api/add-inventory-item`, {
+                    method: "DELETE",
+                    body: JSON.stringify({
+                      collection: collection,
+                      team: team,
+                      id: item.id,
+                    }),
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                  });
+                  onItemAdded();
+                } catch (err) {
+                  console.error("Error submitting transaction:", err);
+                }
+              }}
+              className="text-red-500"
             >
-              Copy description
+              Delete item
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

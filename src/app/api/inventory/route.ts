@@ -39,21 +39,21 @@ export async function POST(request: Request) {
     const { name } = await request.json();
     const db = client.db("inventory");
     const result = await db.createCollection(name);
-    const collections = await db.listCollections({ name }).toArray();
-    if (collections.length > 0) {
-      return NextResponse.json(
-        { error: "Collection already exists" },
-        { status: 409 }
-      );
-    }
+    // const collections = await db.listCollections({ name }).toArray();
+    // if (collections.length > 0) {
+    //   return NextResponse.json(
+    //     { error: "Collection already exists" },
+    //     { status: 409 }
+    //   );
+    // }
 
     await db.collection(name).insertMany([
-      { team: "82855G", items: [] },
-      { team: "82855S", items: [] },
-      { team: "82855T", items: [] },
-      { team: "82855X", items: [] },
-      { team: "82855Y", items: [] },
-      { team: "82855Z", items: [] },
+      { team: "g-team", items: [] },
+      { team: "s-team", items: [] },
+      { team: "t-team", items: [] },
+      { team: "x-team", items: [] },
+      { team: "y-team", items: [] },
+      { team: "z-team", items: [] },
     ]);
     return NextResponse.json(result);
   } catch (error) {

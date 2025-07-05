@@ -3,7 +3,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
-
+import { ObjectId } from 'mongodb';
 import {
   Command,
   CommandEmpty,
@@ -50,7 +50,17 @@ const category = [
   { value: "entertainment", label: "Entertainment" },
   { value: "other", label: "Other" },
 ];
-export default function AddItemForm() {
+interface AddItemFormProps {
+  collection: string;
+  team: string;
+  onItemAdded?: () => void;
+}
+
+export default function AddItemForm({
+  collection,
+  team,
+  onItemAdded,
+}: AddItemFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,9 +71,29 @@ export default function AddItemForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const response = await fetch(`/api/add-inventory-item`, {
+        method: "POST",
+        body: JSON.stringify({
+          collection: collection,
+          team: team,
+          name: values.name,
+          category: values.category,
+          amount: values.amount,
+          description: values.description
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.status === 200) {
+        onItemAdded?.();
+      }
+    } catch (err) {
+      console.error("Error submitting transaction:", err);
+    }
+  };
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
@@ -109,9 +139,7 @@ export default function AddItemForm() {
                   </PopoverTrigger>
                   <PopoverContent className="w-[200px] p-0">
                     <Command>
-                      <CommandInput
-                        placeholder="Search category..."
-                      />
+                      <CommandInput placeholder="Search category..." />
                       <CommandList>
                         <CommandEmpty>No category found.</CommandEmpty>
                         <CommandGroup>
@@ -174,7 +202,11 @@ export default function AddItemForm() {
             <FormItem>
               <FormLabel className="text-sm">Notes (optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Add some notes" className="text-sm" {...field} />
+                <Input
+                  placeholder="Add some notes"
+                  className="text-sm"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

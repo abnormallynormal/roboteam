@@ -40,7 +40,6 @@ const formSchema = z.object({
 });
 
 export default function Inventory() {
-    
   const [collections, setCollections] = useState<any[]>([]);
   const [switchDetector, setSwitchDetector] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -92,7 +91,10 @@ export default function Inventory() {
           Track parts, components, and equipment for your team.
         </div>
         <div className="relative">
-          <Tabs defaultValue={collections[0]?.collectionName || ""} className="gap-0 cols-span-2">
+          <Tabs
+            defaultValue="Borrowed Items"
+            className="gap-0 cols-span-2"
+          >
             <AlteredTabsList className="bg-[#F5F5F5] h-full">
               {collections.map((collection) => (
                 <TabsTrigger
@@ -125,12 +127,19 @@ export default function Inventory() {
                         <TabsContent value={team.team} key={team.team}>
                           <div className="mt-4">
                             <DataTable
-                              columns={columns}
+                              collection={collection.collectionName}
+                              team={team.team}
+                              columns={columns(
+                                collection.collectionName,
+                                team.team,
+                                () => setSwitchDetector(!switchDetector)
+                              )}
                               data={team.items.map((item: any) => ({
-                                name: item[0],
-                                category: item[1],
-                                amount: item[2],
-                                description: item[3],
+                                id: item.id,
+                                name: item.name,
+                                category: item.category,
+                                amount: item.amount,
+                                description: item.description,
                               }))}
                             />
                           </div>
