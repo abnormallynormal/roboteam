@@ -50,8 +50,8 @@ export async function PATCH(request: Request) {
     const result = await db
       .collection(collection)
       .updateOne(
-        { team: team, items: { id: id } },
-        { $set: { category: value } }
+        { team: team, "items.id": id },
+        { $set: { "items.$.category": value } }
       );
 
     return NextResponse.json(result);

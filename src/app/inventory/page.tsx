@@ -18,7 +18,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@radix-ui/react-popover";
+} from "@/components/ui/popover";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -158,11 +158,11 @@ export default function Inventory() {
                 Add new inventory count
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="bg-background text-foreground border rounded-md shadow-lg p-4">
+            <PopoverContent>
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-8"
+                  className="space-y-4"
                 >
                   <FormField
                     control={form.control}
@@ -171,7 +171,7 @@ export default function Inventory() {
                       <FormItem>
                         <FormLabel>Name of new inventory count</FormLabel>
                         <FormControl>
-                          <Input placeholder="shadcn" {...field} />
+                          <Input placeholder="Inventory September 2025" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

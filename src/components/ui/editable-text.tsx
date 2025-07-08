@@ -30,8 +30,12 @@ const EditableText = ({ initialText, row, collection, team, field }: EditableTex
   }, [isEditing]);
 
   const handleDoubleClick = () => setIsEditing(true);
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
+    
+  };
+  const handleBlur = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsEditing(false);
     try {
       console.log(collection)
       console.log(team)
@@ -57,8 +61,8 @@ const EditableText = ({ initialText, row, collection, team, field }: EditableTex
       console.error("Error submitting transaction:", err);
     }
   
-  };
-  const handleBlur = () => setIsEditing(false);
+  }
+
 
   return (
     <div onDoubleClick={handleDoubleClick}>
