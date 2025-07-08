@@ -54,6 +54,14 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
+                <Link href="/partsorders">Parts Orders</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
                 <Link href="/inventory">Inventory</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
