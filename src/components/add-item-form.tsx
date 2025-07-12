@@ -87,9 +87,7 @@ export default function AddItemForm({
           "Content-Type": "application/json",
         },
       });
-      if (response.status === 200) {
-        onItemAdded?.();
-      }
+      onItemAdded?.();
     } catch (err) {
       console.error("Error submitting transaction:", err);
     }

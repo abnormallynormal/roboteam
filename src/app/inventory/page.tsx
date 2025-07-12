@@ -1,6 +1,6 @@
 "use client";
 import Navbar from "@/components/Navigation";
-import { Plus } from "lucide-react";
+import { Plus, File } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   Tabs,
@@ -42,6 +42,7 @@ const formSchema = z.object({
 export default function Inventory() {
   const [collections, setCollections] = useState<any[]>([]);
   const [switchDetector, setSwitchDetector] = useState(false);
+  const [display, setDisplay] = useState<any>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -79,6 +80,12 @@ export default function Inventory() {
       });
       console.log(temp);
       setCollections(temp);
+
+      if (display) {
+        setDisplay(
+          temp.find((col) => col.collectionName === display.collectionName)
+        );
+      }
     };
     fetchData();
   }, [switchDetector]);
@@ -90,98 +97,115 @@ export default function Inventory() {
         <div className="mb-8">
           Track parts, components, and equipment for your team.
         </div>
-        <div className="relative">
-          <Tabs
-            defaultValue="Borrowed Items"
-            className="gap-0 cols-span-2"
-          >
-            <AlteredTabsList className="bg-[#F5F5F5] h-full">
-              {collections.map((collection) => (
-                <TabsTrigger
+        <div className="grid grid-cols-[2fr_7fr] gap-6">
+          <Card className="h-fit gap-3">
+            <div className="font-semibold mx-4 mb-2 text-xl">
+              Select inventory count
+            </div>
+            {collections.map((collection) => (
+              <div className="flex items-center mx-4" key = {collection.collectionName}>
+                <File />
+                <Button
                   value={collection.collectionName}
-                  className="rounded-t-lg"
-                  key={collection.collectionName} // Add key here
+                  className="justify-self-start"
+                  variant="link"
+                  key={collection.collectionName}
+                  onClick={() => {
+                    setDisplay(collection);
+                    setSwitchDetector(!switchDetector);
+                  }}
                 >
                   {collection.collectionName}
-                </TabsTrigger>
-              ))}
-            </AlteredTabsList>
-            {collections.map((collection) => (
-              <TabsContent
-                value={collection.collectionName}
-                className="cols-span-2"
-                key={collection.collectionName} // Add key here
-              >
-                <AlteredCard className="rounded-br-xl rounded-bl-xl cols-span-2">
-                  <div className="px-4 py-2 min-w-0">
-                    <Tabs defaultValue="g-team">
-                      <TabsList className="bg-[#F5F5F5] w-full">
-                        <TabsTrigger value="g-team">82855G</TabsTrigger>
-                        <TabsTrigger value="s-team">82855S</TabsTrigger>
-                        <TabsTrigger value="t-team">82855T</TabsTrigger>
-                        <TabsTrigger value="x-team">82855X</TabsTrigger>
-                        <TabsTrigger value="y-team">82855Y</TabsTrigger>
-                        <TabsTrigger value="z-team">82855Z</TabsTrigger>
-                      </TabsList>
-                      {collection.items.map((team: any) => (
-                        <TabsContent value={team.team} key={team.team}>
-                          <div className="mt-4">
-                            <DataTable
-                              collection={collection.collectionName}
-                              team={team.team}
-                              columns={columns(
-                                collection.collectionName,
-                                team.team,
-                                () => setSwitchDetector(!switchDetector)
-                              )}
-                              data={team.items.map((item: any) => ({
-                                id: item.id,
-                                name: item.name,
-                                category: item.category,
-                                amount: item.amount,
-                                description: item.description,
-                              }))}
-                            />
-                          </div>
-                        </TabsContent>
-                      ))}
-                    </Tabs>
-                  </div>
-                </AlteredCard>
-              </TabsContent>
+                </Button>
+              </div>
             ))}
-          </Tabs>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="special" className=" absolute top-0 right-0">
-                <Plus />
-                Add new inventory count
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name of new inventory count</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Inventory September 2025" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit">Submit</Button>
-                </form>
-              </Form>
-            </PopoverContent>
-          </Popover>
+          </Card>
+          <Card>
+            <div className="font-semibold text-xl mx-4 relative">
+              <div>Inventory</div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    className=" absolute top-0 right-0"
+                  >
+                    <Plus />
+                    Add new inventory count
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name of new inventory count</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Inventory September 2025"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit">Submit</Button>
+                    </form>
+                  </Form>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div className=" w-full">
+              {display === null ? (
+                <div className="text-center self-center">
+                  No inventory selected
+                </div>
+              ) : (
+                <div className="px-4 py-2 min-w-0">
+                  <Tabs defaultValue="g-team" className="w-full">
+                    <TabsList className="bg-[#F5F5F5] w-full">
+                      <TabsTrigger value="g-team">82855G</TabsTrigger>
+                      <TabsTrigger value="s-team">82855S</TabsTrigger>
+                      <TabsTrigger value="t-team">82855T</TabsTrigger>
+                      <TabsTrigger value="x-team">82855X</TabsTrigger>
+                      <TabsTrigger value="y-team">82855Y</TabsTrigger>
+                      <TabsTrigger value="z-team">82855Z</TabsTrigger>
+                    </TabsList>
+                    {display?.items?.map((team: any) => (
+                      <TabsContent value={team.team} key={team.team}>
+                        <div className="mt-4">
+                          <DataTable
+                            key={`${display.collectionName}-${team.team}`}
+                            collection={display.collectionName}
+                            team={team.team}
+                            columns={columns(
+                              display.collectionName,
+                              team.team,
+                              () => setSwitchDetector(!switchDetector)
+                            )}
+                            data={team.items.map((item: any) => ({
+                              id: item.id,
+                              name: item.name,
+                              category: item.category,
+                              amount: item.amount,
+                              description: item.description,
+                            }))}
+                          />
+                        </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+              )}
+            </div>
+            <div className="mx-4"></div>
+          </Card>
         </div>
       </div>
     </div>

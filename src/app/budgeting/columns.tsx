@@ -30,7 +30,7 @@ const category = [
 ] as const;
 export type Transaction = {
   _id: string;
-  type: "expense" | "revenue";
+  type: "Expense" | "Revenue";
   description: string;
   amount: number;
   category: (typeof category)[number]["value"];
@@ -74,7 +74,7 @@ export const columns = (
     cell: ({ row }) => {
       return (
         <div>
-          {row.getValue("type") === "revenue" ? (
+          {row.getValue("type") === "Revenue" ? (
             <div className="text-green-600">
               +
               {new Intl.NumberFormat("us-US", {
