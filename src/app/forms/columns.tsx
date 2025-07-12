@@ -28,19 +28,19 @@ const category = [
   { label: "Grants", value: "grants" },
   { label: "Miscellaneous", value: "misc" },
 ] as const;
-export type Transaction = {
+export type Response = {
   _id: string;
-  type: "expense" | "revenue";
-  description: string;
-  amount: number;
-  category: (typeof category)[number]["value"];
+  name: string;
+  team: string;
   date: string;
+  responded: boolean;
+  responses: {
+    [key: string]: string;
+  };
 };
 export const columns = (
-  collection: string,
-  team: string,
   onItemAdded: () => void
-): ColumnDef<Transaction>[] => [
+): ColumnDef<Response>[] => [
   {
     accessorKey: "date",
     header: ({ column }) => {
@@ -49,7 +49,7 @@ export const columns = (
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Transaction Date
+          Response Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
@@ -62,11 +62,11 @@ export const columns = (
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: "Name",
   },
   {
     accessorKey: "category",
-    header: "Category",
+    header: "Response",
   },
   {
     accessorKey: "amount",

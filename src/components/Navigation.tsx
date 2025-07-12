@@ -78,7 +78,7 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/dashboard">Forms</Link>
+                <Link href="/forms">Forms</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
           </div>

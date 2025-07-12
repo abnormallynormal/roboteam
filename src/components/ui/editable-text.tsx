@@ -11,6 +11,7 @@ type EditableTextProps = {
 
 const EditableText = ({ initialText, row, collection, team, field }: EditableTextProps) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [prev, setPrev] = useState<string | undefined>();
   const [text, setText] = useState(initialText);
   const inputRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
@@ -29,14 +30,22 @@ const EditableText = ({ initialText, row, collection, team, field }: EditableTex
     }
   }, [isEditing]);
 
-  const handleDoubleClick = () => setIsEditing(true);
+  const handleDoubleClick = () => {
+    setPrev(row.original[field]);
+    setIsEditing(true);
+  };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value);
     
   };
   const handleBlur = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsEditing(false);
+    if(e.target.value == ""){
+      setText(prev ?? "");
+      return;
+    }
     try {
+      setText(e.target.value)
       console.log(collection)
       console.log(team)
       const response = await fetch(`/api/add-inventory-item`, {
@@ -76,7 +85,6 @@ const EditableText = ({ initialText, row, collection, team, field }: EditableTex
             onBlur={handleBlur}
             className="w-auto min-w-[8px]"
           />
-          {/* Hidden span for measuring text width */}
           <span
             ref={textRef}
             className="invisible absolute whitespace-nowrap"

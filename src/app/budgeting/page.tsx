@@ -1,6 +1,6 @@
 "use client";
 import Navbar from "@/components/Navigation";
-import { Plus } from "lucide-react";
+import { DollarSign, Plus, TrendingDown, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
   Tabs,
@@ -75,10 +75,79 @@ export default function Budgeting() {
         <div className="mb-8">
           Track expenses, manage budget, and monitor financial health.
         </div>
+        <div className="text-2xl font-semibold mb-4">Your budget at a glance</div>
+        <div className="grid grid-cols-4 gap-8 mb-4">
+          <Card className="p-5">
+            <div className="grid grid-cols-[5fr_1fr]">
+              <div>
+                <div className="mb-1">Current balance</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(balance)}
+                </div>
+                <div className="mt-1 text-sm">Available to spend</div>
+              </div>
+              <div>
+                <DollarSign />
+              </div>
+            </div>
+          </Card>
+          <Card className="p-5">
+            <div className="grid grid-cols-[5fr_1fr]">
+              <div>
+                <div className="mb-1">Total budget</div>
+                <div className="font-bold text-3xl">{budget}</div>
+                <div className="mt-1 text-sm">Annual allocation</div>
+              </div>
+              <div>
+                <DollarSign />
+              </div>
+            </div>
+          </Card>
+          <Card className="p-5">
+            <div className="grid grid-cols-[5fr_1fr]">
+              <div>
+                <div className="mb-1">Total revenue</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(revenue)}
+                </div>
+                <div className="mt-1 text-sm">From sponsors and grants</div>
+              </div>
+              <div>
+                <TrendingUp className="text-green-700" />
+              </div>
+            </div>
+          </Card>
+          <Card className="p-5">
+            <div className="grid grid-cols-[5fr_1fr]">
+              <div>
+                <div className="mb-1">Total expenses</div>
+                <div className="font-bold text-3xl">
+                  {new Intl.NumberFormat("us-US", {
+                    style: "currency",
+                    currency: "CAD",
+                  }).format(expense)}
+                </div>
+                <div className="mt-1 text-sm">0% of budget</div>
+              </div>
+              <div>
+                <TrendingDown className="text-red-700" />
+              </div>
+            </div>
+          </Card>
+        </div>
+        <div className="text-2xl font-semibold mt-8 mb-4">Transactions</div>
         <div className="relative">
           <DataTable
-            columns={columns("yourCollection", "yourTeam", () => setSwitchDetector(!switchDetector))}
-            data={transactions} 
+            columns={columns("yourCollection", "yourTeam", () =>
+              setSwitchDetector(!switchDetector)
+            )}
+            data={transactions}
           />
         </div>
       </div>
