@@ -7,13 +7,13 @@ export async function PATCH(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    const { document, name, value } = await request.json();
+    const { document, name, paid } = await request.json();
     const db = client.db("roboteam");
     const result = await db
       .collection("payments")
       .updateOne(
         { name: document, "responses.name": name },
-        { $set: { "responses.$.paid": !value } }
+        { $set: { "responses.$.paid": paid } }
       );
 
     return NextResponse.json(result);
