@@ -29,7 +29,7 @@ export type Payment = {
   paid: boolean;
 };
 export const columns = (
-  collection: string,
+  document: string,
   onChange: () => void
 ): ColumnDef<Payment>[] => [
   {
@@ -49,20 +49,20 @@ export const columns = (
     header: "Paid?",
     cell: ({ row }) => {
       const value = row.original.paid;
+      console.log(value);
       return (
         <Checkbox
           defaultChecked={value}
-          // onCheckedChange={async (checked) => {
-          //   try {
-          //     await fetch(`/api/payments/${row.original.id}`, {
-          //       method: "PATCH",
-          //       body: JSON.stringify({ paid: checked }),
-          //     });
-          //     onChange();
-          //   } catch (error) {
-          //     console.error("Error updating payment:", error);
-          //   }
-          // }}
+          onCheckedChange={async (checked) => {
+            try {
+              await fetch(`/api/update-payment-response`, {
+                method: "PATCH",
+                body: JSON.stringify({ document: document , name: row.original.name, paid: !value }),
+              })
+            } catch (error) {
+              console.error("Error updating payment:", error);
+            }
+          }}
         />
       );
     },
