@@ -17,7 +17,7 @@ import {
 import { Button } from "./ui/button";
 export default function Navbar() {
   return (
-    <div >
+    <div>
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem className="ml-4">
@@ -78,6 +78,22 @@ export default function Navbar() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
+                <Link href="/signoutform">Signout</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
+                <Link href="/signoutsheet">Sheet</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
                 <Link href="/forms">Forms</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
@@ -92,6 +108,7 @@ export default function Navbar() {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
+          
         </NavigationMenuList>
       </NavigationMenu>
     </div>
