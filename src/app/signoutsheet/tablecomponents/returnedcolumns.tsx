@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 export type ReturnedItem = {
+  value: string;
   returnerName: string;
   returnerTeam: string;
   returnedItem: string;

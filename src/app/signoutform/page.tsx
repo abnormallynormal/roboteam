@@ -55,6 +55,7 @@ export default function SignOutForm() {
     email: z.string().email({
       message: "Invalid email address.",
     }),
+    team: z.string().min(1, { message: "Please select a team." }),
     items: z
       .array(itemSchema)
       .min(1, { message: "Please enter at least one item" })
@@ -64,6 +65,8 @@ export default function SignOutForm() {
     email: z.string().email({
       message: "Invalid email address.",
     }),
+    team: z.string().min(1, { message: "Please select a team." }),
+
     items: z
       .array(returnSchema)
       .min(1, { message: "Please enter at least one item" })
@@ -73,6 +76,7 @@ export default function SignOutForm() {
     resolver: zodResolver(signOutFormSchema),
     defaultValues: {
       email: "",
+      team: "",
       items: [{ type: "", name: "", quantity: NaN }],
     },
   });
@@ -80,6 +84,8 @@ export default function SignOutForm() {
     resolver: zodResolver(signInFormSchema),
     defaultValues: {
       email: "",
+      team: "",
+
       items: [{ item: "", returnQuantity: NaN }],
     },
   });
@@ -102,18 +108,33 @@ export default function SignOutForm() {
     name: "items",
     control: formSignin.control,
   });
+  const teams = ["82855G", "82855S", "82855T", "82855X", "82855Y", "82855Z"];
   const [switchDetector, setSwitchDetector] = useState(false);
   const [dataset, setDataset] = useState([
     {
       value: "",
-      label: { email: "", date: "", item: 0, initialQ: 0, remainingQ: 0 },
+      label: {
+        email: "",
+        team: "",
+        date: "",
+        item: 0,
+        initialQ: 0,
+        remainingQ: 0,
+      },
       display: "",
     },
   ]);
   const [toBeReturned, setToBeReturned] = useState([
     {
       value: "",
-      label: { email: "", date: "", item: 0, initialQ: 0, remainingQ: 0 },
+      label: {
+        email: "",
+        team: "",
+        date: "",
+        item: 0,
+        initialQ: 0,
+        remainingQ: 0,
+      },
       display: "",
     },
   ]);
@@ -130,24 +151,26 @@ export default function SignOutForm() {
           value: document._id,
           label: {
             email: document.email,
+            team: document.team,
             date: document.date,
             item: document.item,
             initialQ: document.initial,
             remainingQ: document.remaining,
           },
-          display: `${document.email}: ${document.item} (${document.remaining})`,
+          display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
         });
         if (document.remaining > 0) {
           tempTBR.push({
             value: document._id,
             label: {
               email: document.email,
+              team: document.team,
               date: document.date,
               item: document.item,
               initialQ: document.initial,
               remainingQ: document.remaining,
             },
-            display: `${document.email}: ${document.item} (${document.remaining})`,
+            display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
           });
         }
       });
@@ -160,6 +183,7 @@ export default function SignOutForm() {
 
   async function signOut(values: z.infer<typeof signOutFormSchema>) {
     var email = values.email;
+    var team = values.team;
     for (var i = 0; i < values.items.length; i++) {
       var item = values.items[i];
       try {
@@ -167,6 +191,7 @@ export default function SignOutForm() {
           method: "POST",
           body: JSON.stringify({
             email: email,
+            team: team,
             date: new Date().toISOString(),
             item: item.name,
             initial: item.quantity,
@@ -189,6 +214,7 @@ export default function SignOutForm() {
   }
   async function signIn(values: z.infer<typeof signInFormSchema>) {
     var email = values.email;
+    var team = values.team;
     for (var i = 0; i < values.items.length; i++) {
       var item = values.items[i];
       try {
@@ -196,6 +222,7 @@ export default function SignOutForm() {
           method: "PATCH",
           body: JSON.stringify({
             email: email,
+            team: team,
             item: item.item,
             originalQuantity: dataset.find((data) => data.value === item.item)
               ?.label.remainingQ,
@@ -244,19 +271,95 @@ export default function SignOutForm() {
                     onSubmit={formSignout.handleSubmit(signOut)}
                     className="space-y-8"
                   >
-                    <FormField
-                      control={formSignout.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="mt-4 mb-6">
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="team@robotics.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={formSignout.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem className="mt-4 mb-6">
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="team@robotics.com"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={formSignout.control}
+                        name="team"
+                        render={({ field }) => (
+                          <FormItem className="mt-4 mb-6">
+                            <FormLabel>Team</FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                        "w-full justify-between font-normal",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value
+                                        ? teams.find(
+                                            (data) => data === field.value
+                                          )
+                                        : "Select team"}
+                                      <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+                                  <Command>
+                                    <CommandInput
+                                      placeholder="Search for a team..."
+                                      className="h-9"
+                                    />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No teams found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {teams.map((team) => (
+                                          <CommandItem
+                                            value={team}
+                                            key={team}
+                                            onSelect={() => {
+                                              formSignout.setValue(
+                                                "team",
+                                                team
+                                              );
+                                              field.value = team;
+                                            }}
+                                          >
+                                            {team}
+                                            <Check
+                                              className={cn(
+                                                "ml-auto",
+                                                team === field.value
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     {signOutFields.map((field, index) => {
                       return (
                         <div key={index}>
@@ -352,19 +455,92 @@ export default function SignOutForm() {
                     onSubmit={formSignin.handleSubmit(signIn)}
                     className="space-y-8"
                   >
-                    <FormField
-                      control={formSignin.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="mt-4 mb-6">
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="team@robotics.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={formSignin.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem className="mt-4 mb-6">
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="team@robotics.com"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={formSignin.control}
+                        name="team"
+                        render={({ field }) => (
+                          <FormItem className="mt-4 mb-6">
+                            <FormLabel>Team</FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn(
+                                        "w-full justify-between font-normal",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value
+                                        ? teams.find(
+                                            (data) => data === field.value
+                                          )
+                                        : "Select team"}
+                                      <ChevronsUpDown className="opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
+                                  <Command>
+                                    <CommandInput
+                                      placeholder="Search for a team..."
+                                      className="h-9"
+                                    />
+                                    <CommandList>
+                                      <CommandEmpty>
+                                        No teams found.
+                                      </CommandEmpty>
+                                      <CommandGroup>
+                                        {teams.map((team) => (
+                                          <CommandItem
+                                            value={team}
+                                            key={team}
+                                            onSelect={() => {
+                                              formSignin.setValue("team", team);
+                                              field.value = team;
+                                            }}
+                                          >
+                                            {team}
+                                            <Check
+                                              className={cn(
+                                                "ml-auto",
+                                                team === field.value
+                                                  ? "opacity-100"
+                                                  : "opacity-0"
+                                              )}
+                                            />
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     {signInFields.map((field, index) => {
                       return (
                         <div key={index}>

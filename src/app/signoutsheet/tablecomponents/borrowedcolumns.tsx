@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 export type BorrowedItem = {
+  value: string;
   borrowerName: string;
   borrowerTeam: string;
   borrowedItem: string;

@@ -26,10 +26,11 @@ export async function POST(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    const { email, item, initial, remaining } = await request.json();
+    const { email, team, item, initial, remaining } = await request.json();
     const db = client.db("roboteam");
     const result = await db.collection("signout").insertOne({
       email: email,
+      team: team,
       date: new Date().toISOString(),
       item: item,
       initial: initial,
