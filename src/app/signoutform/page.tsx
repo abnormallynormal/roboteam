@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Form,
@@ -101,25 +102,118 @@ export default function SignOutForm() {
     name: "items",
     control: formSignin.control,
   });
-  const items = [
+  const [switchDetector, setSwitchDetector] = useState(false);
+  const [dataset, setDataset] = useState([
     {
-      value: "1",
-      label: "Evan Ding: Gooned to a file",
+      value: "",
+      label: { email: "", date: "", item: 0, initialQ: 0, remainingQ: 0 },
+      display: "",
     },
+  ]);
+  const [toBeReturned, setToBeReturned] = useState([
     {
-      value: "2",
-      label: "Kevin He: Ate a big mac",
+      value: "",
+      label: { email: "", date: "", item: 0, initialQ: 0, remainingQ: 0 },
+      display: "",
     },
-  ];
-  // 2. Define a submit handler.
-  function signOut(values: z.infer<typeof signOutFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  ]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await fetch(`/api/signout`);
+      const data = await result.json();
+      console.log(data);
+      const temp: any[] = [];
+      const tempTBR: any[] = [];
+      data.forEach((document: any) => {
+        temp.push({
+          value: document._id,
+          label: {
+            email: document.email,
+            date: document.date,
+            item: document.item,
+            initialQ: document.initial,
+            remainingQ: document.remaining,
+          },
+          display: `${document.email}: ${document.item} (${document.remaining})`,
+        });
+        if (document.remaining > 0) {
+          tempTBR.push({
+            value: document._id,
+            label: {
+              email: document.email,
+              date: document.date,
+              item: document.item,
+              initialQ: document.initial,
+              remainingQ: document.remaining,
+            },
+            display: `${document.email}: ${document.item} (${document.remaining})`,
+          });
+        }
+      });
+      console.log(temp);
+      setDataset(temp);
+      setToBeReturned(tempTBR);
+    };
+    fetchData();
+  }, [switchDetector]);
+
+  async function signOut(values: z.infer<typeof signOutFormSchema>) {
+    var email = values.email;
+    for (var i = 0; i < values.items.length; i++) {
+      var item = values.items[i];
+      try {
+        const response = await fetch(`/api/signout`, {
+          method: "POST",
+          body: JSON.stringify({
+            email: email,
+            date: new Date().toISOString(),
+            item: item.name,
+            initial: item.quantity,
+            remaining: item.quantity,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        formSignout.reset({
+          email: "",
+          items: [{ type: "", name: "", quantity: NaN }],
+        });
+        setSwitchDetector((prev) => !prev);
+      } catch (err) {
+        console.error("Error submitting transaction:", err);
+      }
+    }
     console.log(values);
   }
-  function signIn(values: z.infer<typeof signInFormSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  async function signIn(values: z.infer<typeof signInFormSchema>) {
+    var email = values.email;
+    for (var i = 0; i < values.items.length; i++) {
+      var item = values.items[i];
+      try {
+        const response = await fetch(`/api/signout`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            email: email,
+            item: item.item,
+            originalQuantity: dataset.find((data) => data.value === item.item)
+              ?.label.remainingQ,
+            returnQuantity: item.returnQuantity,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        formSignin.reset({
+          email: "",
+          items: [{ item: "", returnQuantity: NaN }],
+        });
+        setSwitchDetector((prev) => !prev);
+      } catch (err) {
+        console.error("Error submitting transaction:", err);
+      }
+    }
     console.log(values);
   }
   return (
@@ -237,8 +331,11 @@ export default function SignOutForm() {
                     <div className="grid grid-cols-2 gap-4">
                       <Button
                         type="button"
+                        variant="secondary"
                         className="w-full"
-                        onClick={() => appendSignOut({ type: "", name: "", quantity: NaN })}
+                        onClick={() =>
+                          appendSignOut({ type: "", name: "", quantity: NaN })
+                        }
                       >
                         Add Item
                       </Button>
@@ -293,16 +390,16 @@ export default function SignOutForm() {
                                             )}
                                           >
                                             {field.value
-                                              ? items.find(
-                                                  (item) =>
-                                                    item.value === field.value
-                                                )?.label
+                                              ? dataset.find(
+                                                  (data) =>
+                                                    data.value === field.value
+                                                )?.display
                                               : "Select item"}
                                             <ChevronsUpDown className="opacity-50" />
                                           </Button>
                                         </FormControl>
                                       </PopoverTrigger>
-                                      <PopoverContent className=" p-0">
+                                      <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
                                         <Command>
                                           <CommandInput
                                             placeholder="Search for a borrowed item..."
@@ -310,25 +407,25 @@ export default function SignOutForm() {
                                           />
                                           <CommandList>
                                             <CommandEmpty>
-                                              No item found.
+                                              No items currently signed out.
                                             </CommandEmpty>
                                             <CommandGroup>
-                                              {items.map((item) => (
+                                              {toBeReturned.map((data) => (
                                                 <CommandItem
-                                                  value={item.value}
-                                                  key={item.value}
+                                                  value={data.value}
+                                                  key={data.value}
                                                   onSelect={() => {
                                                     formSignin.setValue(
                                                       `items.${index}.item`,
-                                                      item.value
+                                                      data.value
                                                     );
                                                   }}
                                                 >
-                                                  {item.label}
+                                                  {data.display}
                                                   <Check
                                                     className={cn(
                                                       "ml-auto",
-                                                      item.value === field.value
+                                                      data.value === field.value
                                                         ? "opacity-100"
                                                         : "opacity-0"
                                                     )}
@@ -382,8 +479,11 @@ export default function SignOutForm() {
                     <div className="grid grid-cols-2 gap-4">
                       <Button
                         type="button"
+                        variant="secondary"
                         className="w-full"
-                        onClick={() => appendSignIn({ item: "", returnQuantity: NaN })}
+                        onClick={() =>
+                          appendSignIn({ item: "", returnQuantity: NaN })
+                        }
                       >
                         Add Item
                       </Button>
