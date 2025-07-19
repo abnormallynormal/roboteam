@@ -59,14 +59,20 @@ export const columns = (
     },
     sortingFn: "datetime",
     sortDescFirst: true,
+    filterFn: "inNumberRange",
   },
   {
     accessorKey: "description",
     header: "Description",
+    filterFn: "includesString",
   },
   {
     accessorKey: "category",
     header: "Category",
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorKey: "amount",
@@ -94,50 +100,19 @@ export const columns = (
         </div>
       );
     },
+    filterFn: "inNumberRange",
   },
 
   {
     accessorKey: "type",
     header: "Type",
+    filterFn: "includesString",
   },
   {
     accessorKey: "actions",
     header: () => {
       return (
         <div className="grid grid-cols-[auto_auto] justify-self-end items-center gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8">
-                <Filter />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="text-base mb-4 font-semibold">Filter by</div>
-              <div className="text-sm my-2">Name</div>
-              <div>
-                <Input
-                  placeholder="Filter items by name"
-                  className="mb-4"
-                ></Input>
-              </div>
-              <div className="my-2 text-sm">Category</div>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Metal",
-                  "Wheels",
-                  "Electronics",
-                  "Gears/Sprockets",
-                  "Pneumatics",
-                  "Game Elements",
-                ].map((team) => (
-                  <div key={team} className="flex items-center gap-2">
-                    <Checkbox id={`team-${team}`} />
-                    <Label htmlFor={`team-${team}`}>{team}</Label>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
           <Popover>
             <PopoverTrigger asChild>
               <Button>

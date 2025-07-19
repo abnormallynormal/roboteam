@@ -5,7 +5,8 @@ with open('WORLDS 24-25 STL Robotics Parts Order - Structure, Motion, and Others
     for row in spamreader:
         temp = []
         for i in range(7):
-            temp.append(row[i])
+            if(row[i] != "" or row [i] != "$0.00"):
+                temp.append(row[i])
         items.append(temp)
     for item in items:
         print(item)

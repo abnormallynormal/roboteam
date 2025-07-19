@@ -1,17 +1,25 @@
 "use client";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-
+import { useState } from "react";
 import {
   ColumnDef,
   SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-
+const category = [
+  { label: "Parts Orders", value: "parts-orders" },
+  { label: "Tournament Fees", value: "tournament" },
+  { label: "Food", value: "food" },
+  { label: "Sponsorships", value: "sponsors" },
+  { label: "Grants", value: "grants" },
+  { label: "Miscellaneous", value: "misc" },
+];
 import {
   Table,
   TableBody,
@@ -24,11 +32,21 @@ import EditableText from "@/components/ui/editable-text";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  columnFilters: any;
+  setColumnFilters: any;
 }
+
+interface ColumnFilter {
+  id: string;
+  value: unknown;
+}
+type ColumnFiltersState = ColumnFilter[];
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  columnFilters,
+  setColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     {
@@ -41,11 +59,13 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
+      columnFilters,
     },
   });
 
@@ -63,9 +83,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}

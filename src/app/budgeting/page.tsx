@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
+import FilterPopup from "./filter";
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Name must be at least 1 character.",
@@ -46,6 +47,7 @@ export default function Budgeting() {
   const [budget, setBudget] = useState(0);
   const [revenue, setRevenue] = useState(0);
   const [expense, setExpense] = useState(0);
+  const [columnFilters, setColumnFilters] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -142,12 +144,28 @@ export default function Budgeting() {
           </Card>
         </div>
         <div className="text-2xl font-semibold mt-8 mb-4">Transactions</div>
+        <div className="mb-4">
+          <FilterPopup
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
+            categories={[
+              { label: "Parts Orders", value: "parts-orders" },
+              { label: "Tournament Fees", value: "tournament" },
+              { label: "Food", value: "food" },
+              { label: "Sponsorships", value: "sponsors" },
+              { label: "Grants", value: "grants" },
+              { label: "Miscellaneous", value: "misc" },
+            ]}
+          />
+        </div>
         <div className="relative">
           <DataTable
             columns={columns("yourCollection", "yourTeam", () =>
               setSwitchDetector(!switchDetector)
             )}
             data={transactions}
+            columnFilters={columnFilters}
+            setColumnFilters={setColumnFilters}
           />
         </div>
       </div>
