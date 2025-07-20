@@ -3,6 +3,7 @@ import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,10 +19,20 @@ export default function FilterPopup({
   columnFilters,
   setColumnFilters,
   categories,
+  checkedBoxes,
+  onCheckboxChangeAction,
 }: {
   columnFilters: any;
   setColumnFilters: any;
   categories: { label: string; value: string }[];
+  checkedBoxes: any[];
+  onCheckboxChangeAction: ({
+    category,
+    checked,
+  }: {
+    category: any;
+    checked: boolean;
+  }) => void;
 }) {
   const description =
     columnFilters.find((f: any) => f.id === "description")?.value || "";
@@ -36,82 +47,28 @@ export default function FilterPopup({
     );
   const [startDate, setStartDate] = React.useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = React.useState<Date | undefined>(undefined);
-  const [checkedBoxes, setCheckedBoxes] = React.useState<string[]>([]);
+  const [selected, setSelected] = React.useState<
+    Array<{ label: string; value: string }>
+  >([]);
   const [startOpen, setStartOpen] = React.useState(false);
   const [endOpen, setEndOpen] = React.useState(false);
 
-  const handleDateChange = React.useCallback((date: Date | undefined, isStartDate: boolean) => {
-    if (isStartDate) {
-      setStartDate(date);
-    } else {
-      setEndDate(date);
-    }
-    
-    // Update filters immediately
+  React.useEffect(() => {
     setColumnFilters((prev: any) => {
-      const newFilters = prev.filter((f: any) => f.id !== "date");
-      const currentStartDate = isStartDate ? date : startDate;
-      const currentEndDate = isStartDate ? endDate : date;
+      const newFilters = prev ? prev.filter((f: any) => f.id !== "date") : [];
+      if (startDate && endDate) {
+        newFilters.push({ id: "date", value: {startDate: startDate as Date, endDate: endDate as Date} })
+      }
+      else if (startDate && !endDate) {
+        newFilters.push({ id: "date", value: {startDate: startDate as Date} })
+      }
+      else if (endDate && !startDate) {
+        newFilters.push({ id: "date", value: {endDate: endDate as Date} })
+      }
       
-      if (currentStartDate) {
-        newFilters.push({ id: "date", value: currentStartDate });
-      }
-      if (currentEndDate) {
-        newFilters.push({ id: "date", value: currentEndDate });
-      }
       return newFilters;
     });
-  }, [setColumnFilters]);
-
-  const handleCategoryChange = React.useCallback((category: { label: string; value: string }, checked: string | boolean) => {
-    const isChecked = checked === true;
-    setColumnFilters((prev: any) => {
-      const existingCategoryFilter = prev.find(
-        (filter: any) => filter.id === "category"
-      );
-
-      if (isChecked) {
-        setCheckedBoxes((prev) => [...prev, category.value]);
-        if (existingCategoryFilter) {
-          // Update existing filter
-          const updatedValue = [...existingCategoryFilter.value, category.value];
-          return prev.map((filter: any) =>
-            filter.id === "category"
-              ? { ...filter, value: updatedValue }
-              : filter
-          );
-        } else {
-          // Create new filter
-          return prev.concat({
-            id: "category",
-            value: [category.value],
-          });
-        }
-      } else {
-        setCheckedBoxes((prev) =>
-          prev.filter((val) => val !== category.value)
-        );
-        // Remove category from filter
-        if (existingCategoryFilter) {
-          const updatedValue = existingCategoryFilter.value.filter(
-            (val: string) => val !== category.value
-          );
-          if (updatedValue.length === 0) {
-            // Remove entire filter if no categories left
-            return prev.filter((filter: any) => filter.id !== "category");
-          } else {
-            // Update filter with remaining categories
-            return prev.map((filter: any) =>
-              filter.id === "category"
-                ? { ...filter, value: updatedValue }
-                : filter
-            );
-          }
-        }
-        return prev;
-      }
-    });
-  }, [setColumnFilters]);
+  }, [startDate, endDate]);
 
   return (
     <div className="grid grid-cols-[1fr_auto_auto] gap-4">
@@ -141,7 +98,7 @@ export default function FilterPopup({
               selected={startDate}
               captionLayout="dropdown"
               onSelect={(date) => {
-                handleDateChange(date, true);
+                setStartDate(date);
                 setStartOpen(false);
               }}
             />
@@ -165,7 +122,7 @@ export default function FilterPopup({
               selected={endDate}
               captionLayout="dropdown"
               onSelect={(date) => {
-                handleDateChange(date, false);
+                setEndDate(date);
                 setEndOpen(false);
               }}
             />
@@ -178,22 +135,85 @@ export default function FilterPopup({
             <Filter />
           </Button>
         </PopoverTrigger>
-        <PopoverContent>
+        <PopoverContent className="mr-2">
           <div className="text-base mb-4 font-semibold">
             More filtering options
           </div>
+          <div className="my-2 text-sm">Transaction Type</div>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <Checkbox id="revenue" checked={checkedBoxes.some((item: any) => item.value === "revenue")} onCheckedChange={(checked) => {
+                
+              }}/>
+              <Label htmlFor="revenue">Revenue</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox id="expense" checked={checkedBoxes.some((item: any) => item.value === "expense")} />
+              <Label htmlFor="expense">Expense</Label>
+            </div>
+          </div>
+
           <div className="my-2 text-sm">Category</div>
           <div className="flex flex-wrap gap-3">
             {categories.map((category) => (
               <div key={category.value} className="flex items-center gap-2">
                 <Checkbox
-                  id={`team-${category.value}`}
-                  checked={checkedBoxes.includes(category.value)}
-                  onCheckedChange={(checked) => handleCategoryChange(category, checked)}
+                  id={category.value}
+                  checked={checkedBoxes.some(
+                    (item: any) => item.value === category.value
+                  )}
+                  onCheckedChange={(checked) => {
+                    setColumnFilters((prev: any) => {
+                      const existingCategoryFilter = prev.find(
+                        (filter: any) => filter.id === "category"
+                      );
+                      if (checked) {
+                        onCheckboxChangeAction({ category, checked: true });
+                        if (existingCategoryFilter) {
+                          // Update existing filter
+                          const updatedValue = [
+                            ...existingCategoryFilter.value,
+                            category.value,
+                          ];
+                          return prev.map((filter: any) =>
+                            filter.id === "category"
+                              ? { ...filter, value: updatedValue }
+                              : filter
+                          );
+                        } else {
+                          // Create new filter
+                          return prev.concat({
+                            id: "category",
+                            value: [category.value],
+                          });
+                        }
+                      } else {
+                        onCheckboxChangeAction({ category, checked: false });
+                        if (existingCategoryFilter) {
+                          const updatedValue =
+                            existingCategoryFilter.value.filter(
+                              (val: string) => val !== category.value
+                            );
+                          if (updatedValue.length === 0) {
+                            // Remove entire filter if no categories left
+                            return prev.filter(
+                              (filter: any) => filter.id !== "category"
+                            );
+                          } else {
+                            // Update filter with remaining categories
+                            return prev.map((filter: any) =>
+                              filter.id === "category"
+                                ? { ...filter, value: updatedValue }
+                                : filter
+                            );
+                          }
+                        }
+                        return prev;
+                      }
+                    });
+                  }}
                 />
-                <Label htmlFor={`team-${category.value}`}>
-                  {category.label}
-                </Label>
+                <Label htmlFor={category.value}>{category.label}</Label>
               </div>
             ))}
           </div>

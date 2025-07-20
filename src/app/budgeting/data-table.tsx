@@ -29,11 +29,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import EditableText from "@/components/ui/editable-text";
+import FilterPopup from "./filter";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  columnFilters: any;
-  setColumnFilters: any;
 }
 
 interface ColumnFilter {
@@ -45,8 +44,6 @@ type ColumnFiltersState = ColumnFilter[];
 export function DataTable<TData, TValue>({
   columns,
   data,
-  columnFilters,
-  setColumnFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     {
@@ -54,7 +51,24 @@ export function DataTable<TData, TValue>({
       desc: true,
     },
   ]);
+  const [columnFilters, setColumnFilters] = useState([]);
 
+  const [checkedItems, setCheckedItems] = useState<any[]>([]);
+  const handleCheckboxChange = ({
+    category,
+    checked,
+  }: {
+    category: any;
+    checked: boolean;
+  }) => {
+    console.log(checkedItems)
+    console.log(checked)
+    if (checked) {
+      setCheckedItems((prev: any) => [...prev, category]);
+    } else { 
+      setCheckedItems((prev: any) => prev.filter((item: any) => item.value != category.value));
+    }
+  };
   const table = useReactTable({
     data,
     columns,
@@ -71,6 +85,15 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
+      <div className="mb-4 ">
+        <FilterPopup
+          columnFilters={columnFilters}
+          setColumnFilters={setColumnFilters}
+          categories={category}
+          checkedBoxes={checkedItems}
+          onCheckboxChangeAction={handleCheckboxChange}
+        />
+      </div>
       <div className="rounded-md border">
         <Table className="table-auto">
           <TableHeader>

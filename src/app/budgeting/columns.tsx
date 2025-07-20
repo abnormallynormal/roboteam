@@ -59,7 +59,26 @@ export const columns = (
     },
     sortingFn: "datetime",
     sortDescFirst: true,
-    filterFn: "inNumberRange",
+    filterFn: (row, columnId, filterValue) => {
+      const dateString = row.getValue(columnId) as string;
+      const date = new Date(dateString);
+      const { startDate, endDate } = filterValue;
+      if ((startDate || endDate) && !date) return false;
+      if (startDate && !endDate) {
+        return date.getTime() >= startDate.getTime();
+      } else if (!startDate && endDate) {
+        const newEndDate = new Date(endDate.setHours(23, 59, 59, 999));
+
+        return date.getTime() <= newEndDate.getTime();
+      } else if (startDate && endDate) {
+        const newEndDate = new Date(endDate.setHours(23, 59, 59, 999));
+
+        return (
+          date.getTime() >= startDate.getTime() &&
+          date.getTime() <= newEndDate.getTime()
+        );
+      } else return true;
+    },
   },
   {
     accessorKey: "description",
@@ -70,7 +89,7 @@ export const columns = (
     accessorKey: "category",
     header: "Category",
     filterFn: (row, columnId, filterValue) => {
-      if (!filterValue || filterValue.length === 0) return true;
+      if (!Array.isArray(filterValue)) return true;
       return filterValue.includes(row.getValue(columnId));
     },
   },
