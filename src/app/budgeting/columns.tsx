@@ -1,10 +1,8 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
-import { Filter, MoreHorizontal, Plus } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
+import EditTransactionForm from "@/components/edit-transaction-form";
 import { ArrowUpDown } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -19,7 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AddTransactionForm from "@/components/add-transaction-form";
-import { ObjectId } from "mongodb";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 const category = [
   { label: "Parts Orders", value: "parts-orders" },
   { label: "Tournament Fees", value: "tournament" },
@@ -121,11 +127,13 @@ export const columns = (
     },
     filterFn: "inNumberRange",
   },
-
   {
     accessorKey: "type",
     header: "Type",
-    filterFn: "includesString",
+    filterFn: (row, columnId, filterValue) => {
+      if (filterValue.length === 0 || !Array.isArray(filterValue)) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
   },
   {
     accessorKey: "actions",
@@ -148,21 +156,61 @@ export const columns = (
     },
     cell: ({ row }) => {
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit item</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500">
-              Delete item
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Dialog>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DialogTrigger asChild>
+                <DropdownMenuItem onClick={async () => {}}>
+                  Edit item
+                </DropdownMenuItem>
+              </DialogTrigger>
+              <DropdownMenuItem
+                className="!text-red-500"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(`/api/transactions/{id}`, {
+                      method: "DELETE",
+                      body: JSON.stringify({
+                        id: row.original._id,
+                      }),
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                    });
+                    if (response.status === 200) {
+                      onItemAdded?.();
+                    }
+                  } catch (err) {
+                    console.error("Error deleting transaction:", err);
+                  }
+                }}
+              >
+                Delete item
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit transaction</DialogTitle>
+            </DialogHeader>
+            <EditTransactionForm
+              _id={row.original._id}
+              typeP={row.original.type}
+              description={row.original.description}
+              amount={row.original.amount}
+              categoryP={row.original.category}
+              onItemAdded={onItemAdded}
+              
+            />
+          </DialogContent>
+        </Dialog>
       );
     },
   },

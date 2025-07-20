@@ -19,18 +19,28 @@ export default function FilterPopup({
   columnFilters,
   setColumnFilters,
   categories,
-  checkedBoxes,
+  checkedCategories,
+  checkedType,
   onCheckboxChangeAction,
+  onCheckedTypeChangeAction,
 }: {
   columnFilters: any;
   setColumnFilters: any;
   categories: { label: string; value: string }[];
-  checkedBoxes: any[];
+  checkedCategories: any[];
+  checkedType: string | null;
   onCheckboxChangeAction: ({
     category,
     checked,
   }: {
     category: any;
+    checked: boolean;
+  }) => void;
+  onCheckedTypeChangeAction: ({
+    type,
+    checked,
+  }: {
+    type: string | null;
     checked: boolean;
   }) => void;
 }) {
@@ -47,9 +57,6 @@ export default function FilterPopup({
     );
   const [startDate, setStartDate] = React.useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = React.useState<Date | undefined>(undefined);
-  const [selected, setSelected] = React.useState<
-    Array<{ label: string; value: string }>
-  >([]);
   const [startOpen, setStartOpen] = React.useState(false);
   const [endOpen, setEndOpen] = React.useState(false);
 
@@ -57,15 +64,19 @@ export default function FilterPopup({
     setColumnFilters((prev: any) => {
       const newFilters = prev ? prev.filter((f: any) => f.id !== "date") : [];
       if (startDate && endDate) {
-        newFilters.push({ id: "date", value: {startDate: startDate as Date, endDate: endDate as Date} })
+        newFilters.push({
+          id: "date",
+          value: { startDate: startDate as Date, endDate: endDate as Date },
+        });
+      } else if (startDate && !endDate) {
+        newFilters.push({
+          id: "date",
+          value: { startDate: startDate as Date },
+        });
+      } else if (endDate && !startDate) {
+        newFilters.push({ id: "date", value: { endDate: endDate as Date } });
       }
-      else if (startDate && !endDate) {
-        newFilters.push({ id: "date", value: {startDate: startDate as Date} })
-      }
-      else if (endDate && !startDate) {
-        newFilters.push({ id: "date", value: {endDate: endDate as Date} })
-      }
-      
+
       return newFilters;
     });
   }, [startDate, endDate]);
@@ -142,13 +153,108 @@ export default function FilterPopup({
           <div className="my-2 text-sm">Transaction Type</div>
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2">
-              <Checkbox id="revenue" checked={checkedBoxes.some((item: any) => item.value === "revenue")} onCheckedChange={(checked) => {
-                
-              }}/>
+              <Checkbox
+                id="revenue"
+                checked={checkedType == "revenue"}
+                onCheckedChange={(checked) => {
+                  setColumnFilters((prev: any) => {
+                    const existingTypeFilter = prev.find(
+                      (filter: any) => filter.id == "type"
+                    );
+                    if (checked) {
+                      onCheckedTypeChangeAction({
+                        type: "revenue",
+                        checked: true,
+                      });
+                      if (existingTypeFilter) {
+                        // Update existing filter
+                        const updatedValue = ["revenue"];
+                        return prev.map((filter: any) =>
+                          filter.id === "type"
+                            ? { ...filter, value: updatedValue }
+                            : filter
+                        );
+                      } else {
+                        // Create new filter
+                        return prev.concat({
+                          id: "type",
+                          value: ["revenue"],
+                        });
+                      }
+                    } else {
+                      onCheckedTypeChangeAction({
+                        type: "revenue",
+                        checked: false,
+                      });
+                      if (existingTypeFilter) {
+                        return prev.filter(
+                          (filter: any) => filter.id !== "type"
+                        );
+                      }
+                      return prev;
+                    }
+                  });
+                }}
+              />
               <Label htmlFor="revenue">Revenue</Label>
             </div>
             <div className="flex items-center gap-2">
-              <Checkbox id="expense" checked={checkedBoxes.some((item: any) => item.value === "expense")} />
+              <Checkbox
+                id="expense"
+                checked={checkedType == "expense"}
+                onCheckedChange={(checked) => {
+                  setColumnFilters((prev: any) => {
+                    const existingTypeFilter = prev.find(
+                      (filter: any) => filter.id === "type"
+                    );
+                    if (checked) {
+                      onCheckedTypeChangeAction({
+                        type: "expense",
+                        checked: true,
+                      });
+                      if (existingTypeFilter) {
+                        // Update existing filter
+                        const updatedValue = ["expense"];
+                        return prev.map((filter: any) =>
+                          filter.id === "type"
+                            ? { ...filter, value: updatedValue }
+                            : filter
+                        );
+                      } else {
+                        // Create new filter
+                        return prev.concat({
+                          id: "type",
+                          value: ["expense"],
+                        });
+                      }
+                    } else {
+                      onCheckedTypeChangeAction({
+                        type: "expense",
+                        checked: false,
+                      });
+                      if (existingTypeFilter) {
+                        const updatedValue = existingTypeFilter.value.filter(
+                          (val: string) => val !== "expense"
+                        );
+                        if (updatedValue.length === 0) {
+                          // Remove entire filter if no types left
+                          return prev.filter(
+                            (filter: any) => filter.id !== "type"
+                          );
+                        } else {
+                          // Update filter with remaining types
+                          return prev.map((filter: any) =>
+                            filter.id === "type"
+                              ? { ...filter, value: updatedValue }
+                              : filter
+                          );
+                        }
+                      }
+                      return prev;
+                    }
+                  });
+                }}
+              />
               <Label htmlFor="expense">Expense</Label>
             </div>
           </div>
@@ -159,7 +265,7 @@ export default function FilterPopup({
               <div key={category.value} className="flex items-center gap-2">
                 <Checkbox
                   id={category.value}
-                  checked={checkedBoxes.some(
+                  checked={checkedCategories.some(
                     (item: any) => item.value === category.value
                   )}
                   onCheckedChange={(checked) => {

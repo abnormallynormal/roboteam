@@ -52,8 +52,22 @@ export function DataTable<TData, TValue>({
     },
   ]);
   const [columnFilters, setColumnFilters] = useState([]);
-
+  const [type, setType] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<any[]>([]);
+  const handleCheckedTypeChange = ({
+    type,
+    checked,
+  }: {
+    type: any;
+    checked: boolean;
+  }) => {
+    if(checked){
+      setType(type);
+    } else {
+      setType(null);
+    }
+    console.log({type});
+  };
   const handleCheckboxChange = ({
     category,
     checked,
@@ -61,12 +75,14 @@ export function DataTable<TData, TValue>({
     category: any;
     checked: boolean;
   }) => {
-    console.log(checkedItems)
-    console.log(checked)
+    console.log(checkedItems);
+    console.log(checked);
     if (checked) {
       setCheckedItems((prev: any) => [...prev, category]);
-    } else { 
-      setCheckedItems((prev: any) => prev.filter((item: any) => item.value != category.value));
+    } else {
+      setCheckedItems((prev: any) =>
+        prev.filter((item: any) => item.value != category.value)
+      );
     }
   };
   const table = useReactTable({
@@ -90,7 +106,9 @@ export function DataTable<TData, TValue>({
           columnFilters={columnFilters}
           setColumnFilters={setColumnFilters}
           categories={category}
-          checkedBoxes={checkedItems}
+          checkedCategories={checkedItems}
+          checkedType={type}
+          onCheckedTypeChangeAction={handleCheckedTypeChange}
           onCheckboxChangeAction={handleCheckboxChange}
         />
       </div>

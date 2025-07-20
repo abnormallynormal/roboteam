@@ -75,7 +75,7 @@ export default function Budgeting() {
         <div className="mb-8">
           Track expenses, manage budget, and monitor financial health.
         </div>
-        <div className="text-2xl font-semibold mb-4">Your budget at a glance</div>
+        {/* <div className="text-2xl font-semibold mb-4">Your budget at a glance</div>
         <div className="grid grid-cols-4 gap-8 mb-4">
           <Card className="p-5">
             <div className="grid grid-cols-[5fr_1fr]">
@@ -140,7 +140,7 @@ export default function Budgeting() {
               </div>
             </div>
           </Card>
-        </div>
+        </div> */}
         <div className="text-2xl font-semibold mt-8 mb-4">Transactions</div>
         <div className="relative">
           <DataTable
