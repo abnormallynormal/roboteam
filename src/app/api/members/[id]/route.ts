@@ -21,29 +21,25 @@ export async function GET(request: Request) {
     );
   }
 }
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
 
     const { date, status } = await request.json();
 
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-    
+    const id = params.id;
+
     const db = client.db("roboteam");
     await db
       .collection("members")
-      .updateOne(
-        { _id: new ObjectId(id) },
-        { $pull: { present: date } }
-      );
+      .updateOne({ _id: new ObjectId(id) }, { $pull: { present: date } });
     await db
       .collection("members")
-      .updateOne(
-        { _id: new ObjectId(id) },
-        { $pull: { late: date } }
-      );
+      .updateOne({ _id: new ObjectId(id) }, { $pull: { late: date } });
     await db
       .collection("members")
       .updateOne({ _id: new ObjectId(id) }, { $pull: { absent: date } });
