@@ -52,7 +52,7 @@ export default function Attendance() {
   useEffect(() => {
     const fetchData = async () => {
       let count = 0;
-      const result = await fetch("/api/members/${memberId}");
+      const result = await fetch("/api/get-members");
       const data = await result.json();
       setTotalMembers(data.length);
       let presentCount = 0;
