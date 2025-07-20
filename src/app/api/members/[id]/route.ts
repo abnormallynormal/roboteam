@@ -21,10 +21,7 @@ export async function GET(request: Request) {
     );
   }
 }
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
