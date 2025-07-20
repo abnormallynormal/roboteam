@@ -22,55 +22,61 @@ export async function GET(request: Request) {
   }
 }
 
-export async function DELETE(request: Request, {params}: {params: {id: string}}) {
-    try {
-        const client = new MongoClient(uri);
-        await client.connect();
-    
-        const resolvedParams = await params;
-        const id = resolvedParams.id;
-    
-        const db = client.db("roboteam");
-        const result = await db.collection("partsorders").deleteOne({
-        _id: new ObjectId(id),
-        });
-    
-        await client.close();
-        return NextResponse.json(result);
-    } catch (error) {
-        console.error("Error deleting order:", error);
-        return NextResponse.json(
-        { error: "Failed to delete order" },
-        { status: 500 }
-        );
-    }
+export async function DELETE(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const client = new MongoClient(uri);
+    await client.connect();
+
+    const { id } = await params;
+
+    const db = client.db("roboteam");
+    const result = await db.collection("partsorders").deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    await client.close();
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    return NextResponse.json(
+      { error: "Failed to delete order" },
+      { status: 500 }
+    );
+  }
 }
 
-export async function POST(request: Request, {params}: {params: {id: string}}) {
-    try {
-        const client = new MongoClient(uri);
-        await client.connect();
-    
-        const resolvedParams = await params;
-        const id = resolvedParams.id;
-        const { partname, quantity, price } = await request.json();
-    
-        const db = client.db("roboteam");
-        const result = await db.collection("partsorders").updateOne({
-        _id: new ObjectId(id),
-        }, {
-            $set: {
-                partname,
-                quantity,
-                price,
-            }
-        });
-        return NextResponse.json(result);
-    } catch (error) {
-        console.error("Error updating order:", error);
-        return NextResponse.json(
-        { error: "Failed to update order" },
-        { status: 500 }
-        );
-    }
+export async function POST(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const client = new MongoClient(uri);
+    await client.connect();
+
+    const { id } = await params;
+    const { partname, quantity, price } = await request.json();
+
+    const db = client.db("roboteam");
+    const result = await db.collection("partsorders").updateOne({
+      _id: new ObjectId(id),
+    }, {
+      $set: {
+        partname,
+        quantity,
+        price,
+      }
+    });
+
+    await client.close();
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Error updating order:", error);
+    return NextResponse.json(
+      { error: "Failed to update order" },
+      { status: 500 }
+    );
+  }
 }
