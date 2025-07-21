@@ -374,13 +374,11 @@ export default function SignOutForm() {
                                   <FormControl>
                                     <Input
                                       placeholder="Game Element"
-                                      {...field}
-                                    />
+                                      {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )}
-                            />
+                              )} />
                             <FormField
                               control={formSignout.control}
                               name={`items.${index}.name`}
@@ -390,13 +388,11 @@ export default function SignOutForm() {
                                   <FormControl>
                                     <Input
                                       placeholder="Red Blocks"
-                                      {...field}
-                                    />
+                                      {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )}
-                            />
+                              )} />
                             <FormField
                               control={formSignout.control}
                               name={`items.${index}.quantity`}
@@ -408,25 +404,19 @@ export default function SignOutForm() {
                                       placeholder="2"
                                       type="number"
                                       {...field}
-                                      value={
-                                        field.value === undefined ||
+                                      value={field.value === undefined ||
                                         Number.isNaN(field.value)
-                                          ? ""
-                                          : field.value
-                                      }
-                                      onChange={(e) =>
-                                        field.onChange(
-                                          e.target.value === ""
-                                            ? undefined
-                                            : Number(e.target.value)
-                                        )
-                                      }
-                                    />
+                                        ? ""
+                                        : field.value}
+                                      onChange={(e) => field.onChange(
+                                        e.target.value === ""
+                                          ? undefined
+                                          : Number(e.target.value)
+                                      )} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )}
-                            />
+                              )} />
                           </div>
                         </div>
                       );

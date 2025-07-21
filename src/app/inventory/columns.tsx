@@ -20,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import AddItemForm from "@/components/add-item-form";
-import { ObjectId } from "mongodb";
 export type Item = {
   id: string;
   name: string;
@@ -63,56 +62,7 @@ export const columns = (
     accessorKey: "actions",
     header: () => {
       return (
-        <div className="grid grid-cols-[auto_auto] justify-self-end items-center gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8">
-                <Filter />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="text-base mb-4 font-semibold">Filter by</div>
-              <div className="text-sm my-2">Name</div>
-              <div>
-                <Input
-                  placeholder="Filter items by name"
-                  className="mb-4"
-                ></Input>
-              </div>
-              <div className="my-2 text-sm">Category</div>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Metal",
-                  "Wheels",
-                  "Electronics",
-                  "Gears/Sprockets",
-                  "Pneumatics",
-                  "Game Elements",
-                ].map((team) => (
-                  <div key={team} className="flex items-center gap-2">
-                    <Checkbox id={`team-${team}`} />
-                    <Label htmlFor={`team-${team}`}>{team}</Label>
-                  </div>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button>
-                <Plus />
-                Add item
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="left" avoidCollisions={true}>
-              <AddItemForm
-                collection={collection}
-                team={team}
-                onItemAdded={onItemAdded}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <div></div>
       );
     },
     cell: ({ row }) => {
@@ -148,7 +98,7 @@ export const columns = (
                   console.error("Error submitting transaction:", err);
                 }
               }}
-              className="text-red-500"
+              className="!text-red-500"
             >
               Delete item
             </DropdownMenuItem>

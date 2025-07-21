@@ -28,6 +28,7 @@ export type Payment = {
   amount: number;
   paid: boolean;
 };
+const arr: string[] = ["Form ", "rj"];
 export const columns = (
   document: string,
   onChange: () => void
@@ -57,8 +58,12 @@ export const columns = (
             try {
               await fetch(`/api/update-payment-response`, {
                 method: "PATCH",
-                body: JSON.stringify({ document: document , name: row.original.name, paid: !value }),
-              })
+                body: JSON.stringify({
+                  document: document,
+                  name: row.original.name,
+                  paid: !value,
+                }),
+              });
             } catch (error) {
               console.error("Error updating payment:", error);
             }
@@ -67,4 +72,31 @@ export const columns = (
       );
     },
   },
+  ...arr.map((item) => ({
+    accessorKey: item,
+    header: item,
+    cell: ({ row }: { row: any }) => {
+      const value = row.original.paid;
+      console.log(value);
+      return (
+        <Checkbox
+          defaultChecked={value}
+          onCheckedChange={async (checked) => {
+            try {
+              await fetch(`/api/update-payment-response`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                  document: document,
+                  name: row.original.name,
+                  paid: !value,
+                }),
+              });
+            } catch (error) {
+              console.error("Error updating payment:", error);
+            }
+          }}
+        />
+      );
+    },
+  })),
 ];

@@ -120,14 +120,14 @@ export default function Inventory() {
               </div>
             ))}
           </Card>
-          <Card>
+          <Card className="overflow-x-auto">
             <div className="font-semibold text-xl mx-4 relative">
               <div>Inventory</div>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="secondary"
-                    className=" absolute top-0 right-0"
+                    className="absolute top-0 right-0"
                   >
                     <Plus />
                     Add new inventory count
@@ -144,7 +144,7 @@ export default function Inventory() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Name of new inventory count</FormLabel>
+                            <FormLabel className="mb-2">Name of new inventory count</FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="Inventory September 2025"
@@ -161,7 +161,7 @@ export default function Inventory() {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className=" w-full">
+            <div className="">
               {display === null ? (
                 <div className="text-center self-center">
                   No inventory selected
@@ -189,6 +189,7 @@ export default function Inventory() {
                               team.team,
                               () => setSwitchDetector(!switchDetector)
                             )}
+                            onItemAdded={() => setSwitchDetector(!switchDetector)}
                             data={team.items.map((item: any) => ({
                               id: item.id,
                               name: item.name,
