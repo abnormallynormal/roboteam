@@ -78,7 +78,6 @@ export default function Inventory() {
           items: collection[1],
         });
       });
-      console.log(temp);
       setCollections(temp);
 
       if (display) {

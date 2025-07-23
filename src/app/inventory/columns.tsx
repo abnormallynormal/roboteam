@@ -19,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import AddItemForm from "@/components/add-item-form";
 export type Item = {
   id: string;
   name: string;
@@ -35,19 +34,15 @@ export const columns = (
   {
     accessorKey: "name",
     header: "Item",
+    filterFn: "includesString"
   },
   {
     accessorKey: "category",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Category
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+    header: "Category",
+    filterFn: (row, columnId, filterValue) => {
+      console.log(filterValue + " HI " + row.getValue(columnId))
+      if (!Array.isArray(filterValue)) return true;
+      return filterValue.includes(row.getValue(columnId));
     },
   },
   {
@@ -67,7 +62,6 @@ export const columns = (
     },
     cell: ({ row }) => {
       const item = row.original;
-      console.log(item);
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

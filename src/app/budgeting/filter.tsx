@@ -85,7 +85,7 @@ export default function FilterPopup({
     <div className="grid grid-cols-[1fr_auto_auto] gap-4">
       <div>
         <Input
-          placeholder="Filter items by description"
+          placeholder="Search transactions by description"
           type="text"
           value={description}
           onChange={(e) => onFilterChange("description", e.target.value)}
@@ -147,15 +147,15 @@ export default function FilterPopup({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="mr-2">
-          <div className="text-base mb-4 font-semibold">
-            More filtering options
+          <div className="text-base mb-2 font-semibold">
+            More filter options
           </div>
           <div className="my-2 text-sm">Transaction Type</div>
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Checkbox
-                id="revenue"
-                checked={checkedType == "revenue"}
+                id="Revenue"
+                checked={checkedType == "Revenue"}
                 onCheckedChange={(checked) => {
                   setColumnFilters((prev: any) => {
                     const existingTypeFilter = prev.find(
@@ -163,12 +163,12 @@ export default function FilterPopup({
                     );
                     if (checked) {
                       onCheckedTypeChangeAction({
-                        type: "revenue",
+                        type: "Revenue",
                         checked: true,
                       });
                       if (existingTypeFilter) {
                         // Update existing filter
-                        const updatedValue = ["revenue"];
+                        const updatedValue = ["Revenue"];
                         return prev.map((filter: any) =>
                           filter.id === "type"
                             ? { ...filter, value: updatedValue }
@@ -178,12 +178,12 @@ export default function FilterPopup({
                         // Create new filter
                         return prev.concat({
                           id: "type",
-                          value: ["revenue"],
+                          value: ["Revenue"],
                         });
                       }
                     } else {
                       onCheckedTypeChangeAction({
-                        type: "revenue",
+                        type: "Revenue",
                         checked: false,
                       });
                       if (existingTypeFilter) {
@@ -196,12 +196,12 @@ export default function FilterPopup({
                   });
                 }}
               />
-              <Label htmlFor="revenue">Revenue</Label>
+              <Label htmlFor="Revenue">Revenue</Label>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
-                id="expense"
-                checked={checkedType == "expense"}
+                id="Expense"
+                checked={checkedType == "Expense"}
                 onCheckedChange={(checked) => {
                   setColumnFilters((prev: any) => {
                     const existingTypeFilter = prev.find(
@@ -209,12 +209,12 @@ export default function FilterPopup({
                     );
                     if (checked) {
                       onCheckedTypeChangeAction({
-                        type: "expense",
+                        type: "Expense",
                         checked: true,
                       });
                       if (existingTypeFilter) {
                         // Update existing filter
-                        const updatedValue = ["expense"];
+                        const updatedValue = ["Expense"];
                         return prev.map((filter: any) =>
                           filter.id === "type"
                             ? { ...filter, value: updatedValue }
@@ -224,17 +224,17 @@ export default function FilterPopup({
                         // Create new filter
                         return prev.concat({
                           id: "type",
-                          value: ["expense"],
+                          value: ["Expense"],
                         });
                       }
                     } else {
                       onCheckedTypeChangeAction({
-                        type: "expense",
+                        type: "Expense",
                         checked: false,
                       });
                       if (existingTypeFilter) {
                         const updatedValue = existingTypeFilter.value.filter(
-                          (val: string) => val !== "expense"
+                          (val: string) => val !== "Expense"
                         );
                         if (updatedValue.length === 0) {
                           // Remove entire filter if no types left
@@ -255,7 +255,7 @@ export default function FilterPopup({
                   });
                 }}
               />
-              <Label htmlFor="expense">Expense</Label>
+              <Label htmlFor="Expense">Expense</Label>
             </div>
           </div>
 

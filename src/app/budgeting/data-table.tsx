@@ -35,12 +35,6 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-interface ColumnFilter {
-  id: string;
-  value: unknown;
-}
-type ColumnFiltersState = ColumnFilter[];
-
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -93,10 +87,7 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
+    
   });
 
   return (

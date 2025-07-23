@@ -1,5 +1,15 @@
 "use client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import EditItemForm from "@/components/edit-item-form";
 import * as React from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -16,6 +26,8 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
+  ColumnFiltersState,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -27,8 +39,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Item } from "./columns";
 import AddItemForm from "@/components/add-item-form";
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends Item, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   collection: string;
@@ -36,23 +49,57 @@ interface DataTableProps<TData, TValue> {
   onItemAdded: () => void;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Item, TValue>({
   columns,
   data,
   collection,
   team,
   onItemAdded,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [trigger, setTrigger] = useState(false);
+  const [item, setItem] = useState<TData | undefined>();
+
+  const handleCheckboxChange = ({
+    category,
+    checked,
+  }: {
+    category: any;
+    checked: boolean;
+  }) => {
+    if (checked) {
+      setCheckedCategories((prev: any) => [...prev, category]);
+    } else {
+      setCheckedCategories((prev: any) =>
+        prev.filter((item: any) => item != category)
+      );
+    }
+  };
+  const description =
+    columnFilters.find((f: any) => f.id === "name")?.value?.toString() || "";
+
+  const onFilterChange = (id: string, value: string) =>
+    setColumnFilters((prev: any) =>
+      prev
+        .filter((f: any) => f.id !== id)
+        .concat({
+          id,
+          value,
+        })
+    );
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
     state: {
       sorting,
+      columnFilters,
     },
   });
 
@@ -61,7 +108,14 @@ export function DataTable<TData, TValue>({
       <div>
         <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 mb-4">
           <div>
-            <Input placeholder="Filter items by name" className=""></Input>
+            <Input
+              placeholder="Search items by name"
+              type="text"
+              value={description}
+              onChange={(e) => {
+                onFilterChange("name", e.target.value);
+              }}
+            ></Input>
           </div>
           <Popover>
             <PopoverTrigger asChild>
@@ -70,19 +124,73 @@ export function DataTable<TData, TValue>({
               </Button>
             </PopoverTrigger>
             <PopoverContent>
+              <div className="text-base mb-2 font-semibold">
+                More filter options
+              </div>
               <div className="my-2 text-sm">Category</div>
               <div className="flex flex-wrap gap-3">
-                {[
-                  "Metal",
-                  "Wheels",
-                  "Electronics",
-                  "Gears/Sprockets",
-                  "Pneumatics",
-                  "Game Elements",
-                ].map((team) => (
-                  <div key={team} className="flex items-center gap-2">
-                    <Checkbox id={`team-${team}`} />
-                    <Label htmlFor={`team-${team}`}>{team}</Label>
+                {["Food", "Clothes", "Entertainment"].map((category) => (
+                  <div key={category} className="flex items-center gap-2">
+                    <Checkbox
+                      id={category}
+                      checked={checkedCategories.some(
+                        (item: any) => item === category
+                      )}
+                      onCheckedChange={(checked) => {
+                        setColumnFilters((prev: any) => {
+                          const existingCategoryFilter = prev.find(
+                            (filter: any) => filter.id === "category"
+                          );
+                          if (checked) {
+                            handleCheckboxChange({ category, checked: true });
+                            if (existingCategoryFilter) {
+                              // Update existing filter
+                              const updatedValue = [
+                                ...existingCategoryFilter.value,
+                                category,
+                              ];
+                              return prev.map((filter: any) =>
+                                filter.id === "category"
+                                  ? { ...filter, value: updatedValue }
+                                  : filter
+                              );
+                            } else {
+                              // Create new filter
+                              return prev.concat({
+                                id: "category",
+                                value: [category],
+                              });
+                            }
+                          } else {
+                            handleCheckboxChange({
+                              category,
+                              checked: false,
+                            });
+                            if (existingCategoryFilter) {
+                              const updatedValue =
+                                existingCategoryFilter.value.filter(
+                                  (val: string) => val != category
+                                );
+                              if (updatedValue.length === 0) {
+                                // Remove entire filter if no categories left
+                                return prev.filter(
+                                  (filter: any) => filter.id !== "category"
+                                );
+                              } else {
+                                // Update filter with remaining categories
+                                return prev.map((filter: any) =>
+                                  filter.id === "category"
+                                    ? { ...filter, value: updatedValue }
+                                    : filter
+                                );
+                              }
+                            }
+                            return prev;
+                          }
+                        });
+                      }}
+                    />
+                    <Label htmlFor={category}>{category}</Label>
                   </div>
                 ))}
               </div>
@@ -144,7 +252,8 @@ export function DataTable<TData, TValue>({
                             : "text-left py-0"
                         }
                         onDoubleClick={() => {
-                          console.log("clicked!");
+                          setItem(row.original);
+                          setTrigger(!trigger)
                         }}
                       >
                         {flexRender(
@@ -169,6 +278,21 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+      <Dialog open={trigger}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+          </DialogHeader>
+          <EditItemForm
+            collection={collection}
+            team={team}
+            name={item?.name}
+            categoryP={item?.category}
+            amount={item?.amount}
+            description={item?.description}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

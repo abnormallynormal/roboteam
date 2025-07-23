@@ -36,9 +36,10 @@ const formSchema = z.object({
   category: z.string().min(1, {
     message: "Please select a category.",
   }),
-  amount: z.number().min(0, {
-    message: "Amount must be at least 0.",
-  }),
+  amount: z
+    .string()
+    .refine((val) => !isNaN(Number(val)), { message: "Invalid amount" })
+    .refine((val) => Number(val) >= 0.01, { message: "Amount must be at least 0." }),
   description: z.string().min(0, {
     message: "Description must be at least 0 characters.",
   }),
@@ -53,21 +54,29 @@ const category = [
 interface AddItemFormProps {
   collection: string;
   team: string;
+  name: string | undefined;
+  categoryP: string | undefined;
+  amount: number | undefined;
+  description: string | undefined;
   onItemAdded?: () => void;
 }
 
-export default function AddItemForm({
+export default function EditItemForm({
   collection,
   team,
+  name,
+  categoryP,
+  amount,
+  description,
   onItemAdded,
 }: AddItemFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      category: undefined,
-      amount: undefined,
-      description: "",
+      name: name,
+      category: categoryP,
+      amount: amount?.toString(),
+      description: description,
     },
   });
 

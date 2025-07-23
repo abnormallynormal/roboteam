@@ -61,7 +61,8 @@ export const columns = (
                 body: JSON.stringify({
                   document: document,
                   name: row.original.name,
-                  paid: !value,
+                  item: "paid",
+                  bool: !value
                 }),
               });
             } catch (error) {
@@ -88,7 +89,8 @@ export const columns = (
                 body: JSON.stringify({
                   document: document,
                   name: row.original.name,
-                  paid: !value,
+                  item: item,
+                  bool: !value,
                 }),
               });
             } catch (error) {
