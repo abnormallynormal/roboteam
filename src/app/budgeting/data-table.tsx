@@ -28,7 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import EditableText from "@/components/ui/editable-text";
 import FilterPopup from "./filter";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

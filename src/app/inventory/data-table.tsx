@@ -1,4 +1,3 @@
-"use client";
 import {
   Dialog,
   DialogContent,
@@ -59,8 +58,8 @@ export function DataTable<TData extends Item, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
-  const [trigger, setTrigger] = useState(false);
-  const [item, setItem] = useState<TData | undefined>();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [item, setItem] = useState<{data: TData, selected: string} | undefined>();
 
   const handleCheckboxChange = ({
     category,
@@ -252,8 +251,8 @@ export function DataTable<TData extends Item, TValue>({
                             : "text-left py-0"
                         }
                         onDoubleClick={() => {
-                          setItem(row.original);
-                          setTrigger(!trigger)
+                          setItem({data: row.original, selected: cell.column.id});
+                          setIsDialogOpen(true)
                         }}
                       >
                         {flexRender(
@@ -278,7 +277,7 @@ export function DataTable<TData extends Item, TValue>({
           </TableBody>
         </Table>
       </div>
-      <Dialog open={trigger}>
+      <Dialog open={isDialogOpen} onOpenChange={() => setIsDialogOpen(false)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Item</DialogTitle>
@@ -286,10 +285,15 @@ export function DataTable<TData extends Item, TValue>({
           <EditItemForm
             collection={collection}
             team={team}
-            name={item?.name}
-            categoryP={item?.category}
-            amount={item?.amount}
-            description={item?.description}
+            id={item?.data.id}
+            name={item?.data.name}
+            categoryP={item?.data.category}
+            amount={item?.data.amount}
+            description={item?.data.description}
+            onItemAdded={() => {
+              setIsDialogOpen(false)
+              onItemAdded?.();
+            }}
           />
         </DialogContent>
       </Dialog>

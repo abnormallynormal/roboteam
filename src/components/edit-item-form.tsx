@@ -54,6 +54,7 @@ const category = [
 interface AddItemFormProps {
   collection: string;
   team: string;
+  id: string | undefined;
   name: string | undefined;
   categoryP: string | undefined;
   amount: number | undefined;
@@ -64,6 +65,7 @@ interface AddItemFormProps {
 export default function EditItemForm({
   collection,
   team,
+  id,
   name,
   categoryP,
   amount,
@@ -83,10 +85,11 @@ export default function EditItemForm({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await fetch(`/api/add-inventory-item`, {
-        method: "POST",
+        method: "PATCH",
         body: JSON.stringify({
           collection: collection,
           team: team,
+          id: id,
           name: values.name,
           category: values.category,
           amount: values.amount,
@@ -122,7 +125,7 @@ export default function EditItemForm({
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sj">Category</FormLabel>
+              <FormLabel className="text-sm">Category</FormLabel>
               <FormControl>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -187,15 +190,11 @@ export default function EditItemForm({
               <FormLabel className="text-sm">Amount</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Enter amount of items"
+                  placeholder="Enter an amount"
                   type="number"
                   {...field}
-                  value={field.value ?? ""} // Show empty string when undefined
-                  onChange={(e) =>
-                    field.onChange(
-                      e.target.value === "" ? undefined : Number(e.target.value)
-                    )
-                  }
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value)}
                 />
               </FormControl>
               <FormMessage />
@@ -219,8 +218,8 @@ export default function EditItemForm({
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Add item
+        <Button type="submit" className="w-full mt-4">
+          Edit item
         </Button>
       </form>
     </Form>

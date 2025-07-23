@@ -41,17 +41,13 @@ export async function PATCH(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    const { collection, team, id, update, value } = await request.json();
+    const { collection, team, id, name, category, amount, description} = await request.json();
     const db = client.db("inventory");
-    console.log(id);
-    console.log(collection);
-    console.log(team);
-    console.log(value);
     const result = await db
       .collection(collection)
       .updateOne(
         { team: team, "items.id": id },
-        { $set: { "items.$.category": value } }
+        { $set: { "items.$.name": name, "items.$.category": category, "items.$.amount": amount, "items.$.description": description } }
       );
 
     return NextResponse.json(result);
