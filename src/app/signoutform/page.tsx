@@ -26,7 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Trash } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -35,15 +35,51 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
 
+const remaining = [
+  { type: "Blocks", max: 3 },
+  { type: "Loaders", max: 2 },
+];
+
+const maxValues = [
+  {
+    type: "Blocks",
+    max: 4,
+  },
+  {
+    type: "Loaders",
+    max: 2,
+  },
+];
 export default function SignOutForm() {
-  const itemSchema = z.object({
-    type: z.string().min(1, { message: "Please select an item type" }),
-    name: z.string().min(1, { message: "Please select an item" }),
-    quantity: z
-      .number({ invalid_type_error: "Quantity is required" })
-      .min(1, { message: "Please enter a positive value" })
-      .refine((val) => !Number.isNaN(val), { message: "Quantity is required" }),
-  });
+  const itemSchema = z
+    .object({
+      type: z.string().min(1, { message: "Please select an item type" }),
+      name: z.string().min(1, { message: "Please select an item" }),
+      quantity: z
+        .number({ invalid_type_error: "Quantity is required" })
+        .min(1, { message: "Please enter a positive value" })
+        .refine((val) => !Number.isNaN(val), {
+          message: "Quantity is required",
+        }),
+    })
+    .superRefine((data, ctx) => {
+      const foundItem = maxValues.find((item) => item.type === data.name);
+      if (foundItem && data.quantity > foundItem.max) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `You cannot borrow more than ${foundItem.max} of ${data.name} at a time`,
+          path: ["quantity"], // This explicitly targets the quantity field
+        });
+      }
+      const itemRemaining = remaining.find((item) => item.type === data.name);
+      if (itemRemaining && data.quantity > itemRemaining.max) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `The maximum number of ${data.name} you can borrow at the moment is ${itemRemaining.max}`,
+          path: ["quantity"], // This explicitly targets the quantity field
+        });
+      }
+    });
   const returnSchema = z.object({
     item: z.string().min(1, { message: "Please select an item to return" }),
     returnQuantity: z
@@ -269,14 +305,14 @@ export default function SignOutForm() {
                 <Form {...formSignout}>
                   <form
                     onSubmit={formSignout.handleSubmit(signOut)}
-                    className="space-y-8"
+                    className="space-y-6"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={formSignout.control}
                         name="email"
                         render={({ field }) => (
-                          <FormItem className="mt-4 mb-6">
+                          <FormItem className="mt-4">
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input
@@ -292,7 +328,7 @@ export default function SignOutForm() {
                         control={formSignout.control}
                         name="team"
                         render={({ field }) => (
-                          <FormItem className="mt-4 mb-6">
+                          <FormItem className="mt-4">
                             <FormLabel>Team</FormLabel>
                             <FormControl>
                               <Popover>
@@ -363,7 +399,27 @@ export default function SignOutForm() {
                     {signOutFields.map((field, index) => {
                       return (
                         <div key={index}>
-                          <div className="my-2 font-bold">Item {index + 1}</div>
+                          {index !== 0 ? (
+                            <div className="flex mb-1 gap-1">
+                              <div className="self-center font-bold">
+                                Item {index + 1}
+                              </div>
+                              <Button
+                                type="button"
+                                className="!text-red-500 justify-items-end items-center "
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => removeSignOut(index)}
+                              >
+                                <Trash />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mb-2 font-bold">
+                              Item {index + 1}
+                            </div>
+                          )}
+
                           <div className="grid grid-cols-[2fr_2fr_1fr] gap-4">
                             <FormField
                               control={formSignout.control}
@@ -374,11 +430,13 @@ export default function SignOutForm() {
                                   <FormControl>
                                     <Input
                                       placeholder="Game Element"
-                                      {...field} />
+                                      {...field}
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )} />
+                              )}
+                            />
                             <FormField
                               control={formSignout.control}
                               name={`items.${index}.name`}
@@ -388,11 +446,13 @@ export default function SignOutForm() {
                                   <FormControl>
                                     <Input
                                       placeholder="Red Blocks"
-                                      {...field} />
+                                      {...field}
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )} />
+                              )}
+                            />
                             <FormField
                               control={formSignout.control}
                               name={`items.${index}.quantity`}
@@ -404,19 +464,25 @@ export default function SignOutForm() {
                                       placeholder="2"
                                       type="number"
                                       {...field}
-                                      value={field.value === undefined ||
+                                      value={
+                                        field.value === undefined ||
                                         Number.isNaN(field.value)
-                                        ? ""
-                                        : field.value}
-                                      onChange={(e) => field.onChange(
-                                        e.target.value === ""
-                                          ? undefined
-                                          : Number(e.target.value)
-                                      )} />
+                                          ? ""
+                                          : field.value
+                                      }
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value === ""
+                                            ? undefined
+                                            : Number(e.target.value)
+                                        )
+                                      }
+                                    />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )} />
+                              )}
+                            />
                           </div>
                         </div>
                       );
@@ -443,14 +509,14 @@ export default function SignOutForm() {
                 <Form {...formSignin}>
                   <form
                     onSubmit={formSignin.handleSubmit(signIn)}
-                    className="space-y-8"
+                    className="space-y-4"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={formSignin.control}
                         name="email"
                         render={({ field }) => (
-                          <FormItem className="mt-4 mb-6">
+                          <FormItem className="mt-4">
                             <FormLabel>Email</FormLabel>
                             <FormControl>
                               <Input
@@ -466,7 +532,7 @@ export default function SignOutForm() {
                         control={formSignin.control}
                         name="team"
                         render={({ field }) => (
-                          <FormItem className="mt-4 mb-6">
+                          <FormItem className="mt-4">
                             <FormLabel>Team</FormLabel>
                             <FormControl>
                               <Popover>

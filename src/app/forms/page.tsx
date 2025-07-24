@@ -107,11 +107,11 @@ export default function Forms() {
                     className=" absolute top-0 right-0"
                   >
                     <Plus />
-                    Add new payment form
+                    Add new form tracker
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
-                  <DialogTitle className="mb-4">Add new payment form</DialogTitle>
+                  <DialogTitle className="mb-4">Add new form tracker</DialogTitle>
                   <AddForm/>
                 </DialogContent>
               </Dialog>
