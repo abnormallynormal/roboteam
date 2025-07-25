@@ -45,7 +45,7 @@ export default function Forms() {
   
   useEffect(() => {
     const fetchData = async () => {
-      const result = await fetch(`/api/payments`);
+      const result = await fetch(`/api/forms`);
       const data = await result.json();
       const temp: any[] = [];
       data.forEach((document: any) => {
@@ -81,7 +81,7 @@ export default function Forms() {
               Select form
             </div>
             {documents.map((document) => (
-              <div className="flex items-center mx-4" key={document.name}>
+              <div className="flex items-center mx-4" key={document._id}>
                 <File />
                 <Button
                   value={document.name}
@@ -110,7 +110,7 @@ export default function Forms() {
                     Add new form tracker
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="w-full">
                   <DialogTitle className="mb-4">Add new form tracker</DialogTitle>
                   <AddForm/>
                 </DialogContent>

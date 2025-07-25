@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
@@ -259,7 +259,12 @@ export default function FilterPopup({
             </div>
           </div>
 
-          <div className="my-2 text-sm">Category</div>
+          <div className="grid grid-cols-2">
+            <div className="my-2 text-sm">Category</div>
+            <Button size="icon" variant="ghost" className="justify-self-end">
+              <Plus/>
+            </Button>
+          </div>
           <div className="flex flex-wrap gap-3">
             {categories.map((category) => (
               <div key={category.value} className="flex items-center gap-2">

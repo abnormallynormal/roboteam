@@ -9,14 +9,14 @@ export async function GET(request: Request) {
     await client.connect();
 
     const db = client.db("roboteam");
-    const payments = await db.collection("payments").find().toArray();
+    const forms = await db.collection("forms").find().toArray();
 
     await client.close();
-    return NextResponse.json(payments);
+    return NextResponse.json(forms);
   } catch (error) {
-    console.error("Error fetching payments:", error);
+    console.error("Error fetching forms:", error);
     return NextResponse.json(
-      { error: "Failed to fetch payments" },
+      { error: "Failed to fetch forms" },
       { status: 500 }
     );
   }
@@ -26,9 +26,9 @@ export async function POST(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    const { name } = await request.json();
+    const { name, type, amount, suppForms } = await request.json();
     const db = client.db("roboteam");
-    const result = await db.collection("payments").insertOne(
+    const result = await db.collection("forms").insertOne(
       {
         name,
         date: (new Date()).toISOString(),
@@ -45,9 +45,9 @@ export async function POST(request: Request) {
     );
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error updating transaction:", error);
+    console.error("Error updating forms:", error);
     return NextResponse.json(
-      { error: "Failed to update transaction" },
+      { error: "Failed to update forms" },
       { status: 500 }
     );
   }

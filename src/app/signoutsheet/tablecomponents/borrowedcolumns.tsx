@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
 export type BorrowedItem = {
   value: string;
   borrowerName: string;
@@ -35,7 +36,19 @@ export const borrowedColumns: ColumnDef<BorrowedItem>[] = [
   },
   {
     accessorKey: "borrowedDate",
-    header: "Date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Date
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    sortingFn: "datetime",
+    sortDescFirst: true,
   },
   {
     accessorKey: "button",

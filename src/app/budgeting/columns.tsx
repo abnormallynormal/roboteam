@@ -45,7 +45,8 @@ export type Transaction = {
 export const columns = (
   collection: string,
   team: string,
-  onItemAdded: () => void
+  onItemAdded: () => void,
+  onDialogTriggered: () => void
 ): ColumnDef<Transaction>[] => [
   {
     accessorKey: "date",
@@ -93,7 +94,17 @@ export const columns = (
   },
   {
     accessorKey: "category",
-    header: "Category",
+    header: ({ column }) => {
+      return (
+        <div
+          onDoubleClick={() => {
+            onDialogTriggered()
+          }}
+        >
+          Category
+        </div>
+      );
+    },
     filterFn: (row, columnId, filterValue) => {
       if (!Array.isArray(filterValue)) return true;
       return filterValue.includes(row.getValue(columnId));
@@ -147,7 +158,7 @@ export const columns = (
                 Add item
               </Button>
             </PopoverTrigger>
-            <PopoverContent side="bottom" avoidCollisions={true}>
+            <PopoverContent avoidCollisions={true}>
               <AddTransactionForm onItemAdded={onItemAdded} />
             </PopoverContent>
           </Popover>
@@ -207,7 +218,6 @@ export const columns = (
               amount={row.original.amount}
               categoryP={row.original.category}
               onItemAdded={onItemAdded}
-              
             />
           </DialogContent>
         </Dialog>

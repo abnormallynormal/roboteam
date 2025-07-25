@@ -31,23 +31,25 @@ const suppFormSchema = z
     }),
     amount: z.number().optional(),
   })
-  .refine(
-    (data) => {
-      if (
-        data.type === "payment" &&
-        (data.amount === undefined ||
-          data.amount === null ||
-          isNaN(data.amount))
-      ) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Amount is required when payment is selected.",
-      path: ["amount"],
+  .superRefine((data, ctx) => {
+    if (
+      data.type === "Payment" &&
+      (data.amount === undefined || data.amount === null || isNaN(data.amount))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Amount is required when form is of type payment.",
+        path: ["amount"],
+      });
     }
-  );
+    if (data.type === "Payment" && data.amount === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Amount must be greater than 0.",
+        path: ["amount"],
+      });
+    }
+  });
 
 const formSchema = z
   .object({
@@ -60,30 +62,25 @@ const formSchema = z
     amount: z.number().optional(),
     suppForms: z.array(suppFormSchema),
   })
-  .refine(
-    (data) => {
-      if (
-        data.type === "payment" &&
-        (data.amount === undefined ||
-          data.amount === null ||
-          isNaN(data.amount))
-      ) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Amount is required when payment is selected.",
-      path: ["amount"],
+  .superRefine((data, ctx) => {
+    if (
+      data.type === "Payment" &&
+      (data.amount === undefined || data.amount === null || isNaN(data.amount))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Amount is required when payment is selected.",
+        path: ["amount"],
+      });
     }
-  );
+  });
 
 export default function AddForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      amount: 0,
+      amount: undefined,
     },
   });
 
@@ -97,11 +94,15 @@ export default function AddForm() {
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("hi");
+    console.log(values);
     try {
-      const response = await fetch(`/api/payments`, {
+      const response = await fetch(`/api/forms`, {
         method: "POST",
         body: JSON.stringify({
           name: values.name,
+          type: values.type,
+          amount: values.amount,
+          suppForms: values.suppForms
         }),
         headers: {
           "Content-Type": "application/json",
@@ -135,7 +136,7 @@ export default function AddForm() {
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type of payment</FormLabel>
+                  <FormLabel>Type of form</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
@@ -162,10 +163,17 @@ export default function AddForm() {
                     <FormLabel>Payment amount</FormLabel>
                     <FormControl>
                       <Input
+                        placeholder="Enter amount of items"
                         type="number"
-                        placeholder="Enter amount"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value ?? ""} // Show empty string when undefined
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === ""
+                              ? undefined
+                              : Number(e.target.value)
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -174,34 +182,95 @@ export default function AddForm() {
               />
             </div>
           )}
-          {extraFields.map((field, index) => {
+          {extraFields.map((fieldItem, index) => {
             return (
-              <FormField
-                key={index}
-                control={form.control}
-                name={`suppForms.${index}.name`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="grid grid-cols-[1fr_auto]">
-                      <div>Name of supplemental form {index + 1}</div>
-                      <div className="justify-end">
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="size-8"
-                          onClick={() => remove(index)}
-                        >
-                          <Trash />
-                        </Button>
-                      </div>
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder={`Form ${index + 1}`} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div key={fieldItem.id} className="space-y-4 relative">
+                <div className="grid grid-cols-2 gap-4 ">
+                  <FormField
+                    control={form.control}
+                    name={`suppForms.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Name of supplemental form {index + 1}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="School Permission Form"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name={`suppForms.${index}.type`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="grid grid-cols-[1fr_auto]">
+                            <div>Type of form</div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="justify-self-end h-4 text-red-500 hover:text-red-700 hover:bg-background"
+                              onClick={() => remove(index)}
+                            >
+                              <Trash />
+                            </Button>
+                          </FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue
+                                  placeholder="Select type"
+                                  {...field}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Payment">Payment</SelectItem>
+                                <SelectItem value="Form">Form</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                {form.watch(`suppForms.${index}.type`) === "Payment" && (
+                  <div>
+                    <FormField
+                      control={form.control}
+                      name={`suppForms.${index}.amount`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Payment amount</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter amount of items"
+                              type="number"
+                              {...field}
+                              value={field.value ?? ""} // Show empty string when undefined
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value === ""
+                                    ? undefined
+                                    : Number(e.target.value)
+                                )
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 )}
-              />
+              </div>
             );
           })}
           <div className="grid grid-cols-2 gap-4">
@@ -209,7 +278,7 @@ export default function AddForm() {
               type="button"
               variant="secondary"
               className="w-full"
-              onClick={() => append({ name: "", type: "Payment", amount: 0 })}
+              onClick={() => append({ name: "", type: "", amount: 0 })}
             >
               Add Item
             </Button>

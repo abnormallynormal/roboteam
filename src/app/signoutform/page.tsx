@@ -51,6 +51,78 @@ const maxValues = [
   },
 ];
 export default function SignOutForm() {
+  const [dataset, setDataset] = useState([
+    {
+      value: "",
+      label: {
+        email: "",
+        team: "",
+        date: "",
+        item: 0,
+        initialQ: 0,
+        remainingQ: 0,
+      },
+      display: "",
+    },
+  ]);
+  const [toBeReturned, setToBeReturned] = useState([
+    {
+      value: "",
+      label: {
+        email: "",
+        team: "",
+        date: "",
+        item: 0,
+        initialQ: 0,
+        remainingQ: 0,
+      },
+      display: "",
+    },
+  ]);
+
+  const teams = ["82855G", "82855S", "82855T", "82855X", "82855Y", "82855Z"];
+  const [switchDetector, setSwitchDetector] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await fetch(`/api/signout`);
+      const data = await result.json();
+      console.log(data);
+      const temp: any[] = [];
+      const tempTBR: any[] = [];
+      data.forEach((document: any) => {
+        temp.push({
+          value: document._id,
+          label: {
+            email: document.email,
+            team: document.team,
+            date: document.date,
+            item: document.item,
+            initialQ: document.initial,
+            remainingQ: document.remaining,
+          },
+          display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
+        });
+        if (document.remaining > 0) {
+          tempTBR.push({
+            value: document._id,
+            label: {
+              email: document.email,
+              team: document.team,
+              date: document.date,
+              item: document.item,
+              initialQ: document.initial,
+              remainingQ: document.remaining,
+            },
+            display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
+          });
+        }
+      });
+      setDataset(temp);
+      setToBeReturned(tempTBR);
+      console.log(tempTBR);
+    };
+    fetchData();
+  }, [switchDetector]);
   const itemSchema = z
     .object({
       type: z.string().min(1, { message: "Please select an item type" }),
@@ -67,7 +139,7 @@ export default function SignOutForm() {
       if (foundItem && data.quantity > foundItem.max) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `You cannot borrow more than ${foundItem.max} of ${data.name} at a time`,
+          message: `You cannot borrow more than ${foundItem.max} ${data.name} at a time`,
           path: ["quantity"], // This explicitly targets the quantity field
         });
       }
@@ -80,13 +152,26 @@ export default function SignOutForm() {
         });
       }
     });
-  const returnSchema = z.object({
-    item: z.string().min(1, { message: "Please select an item to return" }),
-    returnQuantity: z
-      .number({ invalid_type_error: "Quantity is required" })
-      .min(1, { message: "Please enter a positive value" })
-      .refine((val) => !Number.isNaN(val), { message: "Quantity is required" }),
-  });
+  const returnSchema = z
+    .object({
+      item: z.string().min(1, { message: "Please select an item to return." }),
+      returnQuantity: z
+        .number({ invalid_type_error: "Quantity is required" })
+        .min(1, { message: "Please enter a positive value" })
+        .refine((val) => !Number.isNaN(val), {
+          message: "Quantity is required",
+        }),
+    })
+    .superRefine((data, ctx) => {
+      const foundItem = toBeReturned.find((item) => item.value === data.item);
+      if (foundItem && data.returnQuantity > foundItem.label.remainingQ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: foundItem.label.remainingQ === 1 ? `There is only 1 item left to return.` : `There are only ${foundItem.label.remainingQ} items left to return.`,
+          path: ["returnQuantity"],
+        });
+      }
+    });
   const signOutFormSchema = z.object({
     email: z.string().email({
       message: "Invalid email address.",
@@ -144,78 +229,6 @@ export default function SignOutForm() {
     name: "items",
     control: formSignin.control,
   });
-  const teams = ["82855G", "82855S", "82855T", "82855X", "82855Y", "82855Z"];
-  const [switchDetector, setSwitchDetector] = useState(false);
-  const [dataset, setDataset] = useState([
-    {
-      value: "",
-      label: {
-        email: "",
-        team: "",
-        date: "",
-        item: 0,
-        initialQ: 0,
-        remainingQ: 0,
-      },
-      display: "",
-    },
-  ]);
-  const [toBeReturned, setToBeReturned] = useState([
-    {
-      value: "",
-      label: {
-        email: "",
-        team: "",
-        date: "",
-        item: 0,
-        initialQ: 0,
-        remainingQ: 0,
-      },
-      display: "",
-    },
-  ]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const result = await fetch(`/api/signout`);
-      const data = await result.json();
-      console.log(data);
-      const temp: any[] = [];
-      const tempTBR: any[] = [];
-      data.forEach((document: any) => {
-        temp.push({
-          value: document._id,
-          label: {
-            email: document.email,
-            team: document.team,
-            date: document.date,
-            item: document.item,
-            initialQ: document.initial,
-            remainingQ: document.remaining,
-          },
-          display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
-        });
-        if (document.remaining > 0) {
-          tempTBR.push({
-            value: document._id,
-            label: {
-              email: document.email,
-              team: document.team,
-              date: document.date,
-              item: document.item,
-              initialQ: document.initial,
-              remainingQ: document.remaining,
-            },
-            display: `${document.email} - ${document.team}: ${document.item} (${document.remaining})`,
-          });
-        }
-      });
-      console.log(temp);
-      setDataset(temp);
-      setToBeReturned(tempTBR);
-    };
-    fetchData();
-  }, [switchDetector]);
 
   async function signOut(values: z.infer<typeof signOutFormSchema>) {
     var email = values.email;
@@ -251,6 +264,7 @@ export default function SignOutForm() {
   async function signIn(values: z.infer<typeof signInFormSchema>) {
     var email = values.email;
     var team = values.team;
+    console.log(values);
     for (var i = 0; i < values.items.length; i++) {
       var item = values.items[i];
       try {
@@ -600,7 +614,26 @@ export default function SignOutForm() {
                     {signInFields.map((field, index) => {
                       return (
                         <div key={index}>
-                          <div className="my-2 font-bold">Item {index + 1}</div>
+                          {index !== 0 ? (
+                            <div className="flex mb-1 gap-1">
+                              <div className="self-center font-bold">
+                                Item {index + 1}
+                              </div>
+                              <Button
+                                type="button"
+                                className="!text-red-500 justify-items-end items-center "
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => removeSignIn(index)}
+                              >
+                                <Trash />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mb-2 font-bold">
+                              Item {index + 1}
+                            </div>
+                          )}
                           <div className="grid grid-cols-[2fr_1fr] gap-4">
                             <FormField
                               control={formSignin.control}
