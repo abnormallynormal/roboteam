@@ -28,73 +28,55 @@ export type Payment = {
   amount: number;
   paid: boolean;
 };
-const arr: string[] = ["Form ", "rj"];
+
 export const columns = (
   document: string,
-  onChange: () => void
+  onChange: () => void,
+  arr: any[]
 ): ColumnDef<Payment>[] => [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => {
+      return <div>{row.original.name}</div>;
+    },
   },
   {
     accessorKey: "team",
     header: "Team",
   },
-  {
-    accessorKey: "amount",
-    header: "Amount",
-  },
-  {
-    accessorKey: "paid",
-    header: "Paid?",
-    cell: ({ row }) => {
-      const value = row.original.paid;
-      console.log(value);
-      return (
-        <Checkbox
-          defaultChecked={value}
-          onCheckedChange={async (checked) => {
-            try {
-              await fetch(`/api/update-payment-response`, {
-                method: "PATCH",
-                body: JSON.stringify({
-                  document: document,
-                  name: row.original.name,
-                  item: "paid",
-                  bool: !value
-                }),
-              });
-            } catch (error) {
-              console.error("Error updating payment:", error);
-            }
-          }}
-        />
+  ...arr.map((item) => ({
+    accessorKey: item.name,
+    header: () => {
+      return item.type.toString() === "Payment" ? (
+        <div>
+          {item.name} (${item.amount})
+        </div>
+      ) : (
+        <div>{item.name}</div>
       );
     },
-  },
-  ...arr.map((item) => ({
-    accessorKey: item,
-    header: item,
     cell: ({ row }: { row: any }) => {
-      const value = row.original.paid;
-      console.log(value);
+      const value = row.original.responses.find((response: any) => response.formName === item.name).completed;
+      
+      console.log(typeof value);
+      console.log(row.original.name)
       return (
         <Checkbox
           defaultChecked={value}
           onCheckedChange={async (checked) => {
             try {
-              await fetch(`/api/update-payment-response`, {
+              await fetch(`/api/update-form-response`, {
                 method: "PATCH",
                 body: JSON.stringify({
                   document: document,
-                  name: row.original.name,
-                  item: item,
+                  username: row.original.name,
+                  specificFormName: item,
                   bool: !value,
                 }),
               });
             } catch (error) {
-              console.error("Error updating payment:", error);
+              console.error("Error updating form response:", error);
             }
           }}
         />

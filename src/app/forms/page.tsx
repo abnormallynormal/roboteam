@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { columns, Payment } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
@@ -40,30 +40,25 @@ export default function Forms() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [switchDetector, setSwitchDetector] = useState(false);
   const [display, setDisplay] = useState<any>(null);
-  
+
   // 2. Define a submit handler.
-  
+
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch(`/api/forms`);
       const data = await result.json();
+      console.log(data);
       const temp: any[] = [];
       data.forEach((document: any) => {
         temp.push({
           _id: document._id,
           name: document.name,
-          date: document.date,
+          cols: document.cols,
           responses: document.responses,
         });
       });
       console.log(temp);
       setDocuments(temp);
-
-      // if (display) {
-      //   setDisplay(
-      //     temp.find((col) => col.collectionName === display.collectionName)
-      //   );
-      // }
     };
     fetchData();
   }, [switchDetector]);
@@ -77,9 +72,7 @@ export default function Forms() {
         </div>
         <div className="grid grid-cols-[2fr_7fr] gap-6">
           <Card className="h-fit gap-3">
-            <div className="font-semibold mx-4 mb-2 text-xl">
-              Select form
-            </div>
+            <div className="font-semibold mx-4 mb-2 text-xl">Select form</div>
             {documents.map((document) => (
               <div className="flex items-center mx-4" key={document._id}>
                 <File />
@@ -90,6 +83,7 @@ export default function Forms() {
                   onClick={() => {
                     setDisplay(document);
                     setSwitchDetector(!switchDetector);
+                    console.log(document);
                   }}
                 >
                   {document.name}
@@ -111,8 +105,10 @@ export default function Forms() {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="w-full">
-                  <DialogTitle className="mb-4">Add new form tracker</DialogTitle>
-                  <AddForm/>
+                  <DialogTitle className="mb-4">
+                    Add new form tracker
+                  </DialogTitle>
+                  <AddForm />
                 </DialogContent>
               </Dialog>
             </div>
@@ -122,18 +118,19 @@ export default function Forms() {
               ) : (
                 <div className="w-full">
                   <DataTable
-                    columns={columns(display.name, () => {
-                      setSwitchDetector(!switchDetector);
-                    })}
-                    data={
-                      display.responses?.map((response: any) => ({
-                        id: response._id,
-                        name: response.name,
-                        team: response.team,
-                        amount: response.amount,
-                        paid: response.paid,
-                      })) || []
-                    }
+                    columns={columns(
+                      display._id,
+                      () => {
+                        setSwitchDetector(!switchDetector);
+                      },
+                      display.cols
+                    )}
+                    data={display.responses.map((response: any) => ({
+                      id: response.id,
+                      name: response.name,
+                      team: response.team,
+                      responses: response.responses,
+                    }))}
                   />
                 </div>
               )}

@@ -24,25 +24,42 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const teamMembers = [{name: "lebron", team: "82855G"}, {name: "curry", team: "82855S"}, {name: "thompson", team: "82855T"}]
     const client = new MongoClient(uri);
     await client.connect();
     const { name, type, amount, suppForms } = await request.json();
+    const items: any[] = [];
+    const responses: any[] = [];
     const db = client.db("roboteam");
-    const result = await db.collection("forms").insertOne(
-      {
-        name,
-        date: (new Date()).toISOString(),
-        responses: [
-          {
-            _id: new ObjectId(),
-            name: "",
-            team: "",
-            amount: 0,
-            paid: false,
-          },
-        ]
-      }
-    );
+    items.push({
+      name: name,
+      type: type,
+      amount: type.toString() === "Payment" ? amount : 0
+    });
+    suppForms.map((item: any) => {
+      items.push({
+        name: item.name,
+        type: item.type,
+        amount: item.type.toString() === "Payment" ? item.amount : 0,
+      });
+    });
+    teamMembers.flatMap((member) => {
+      responses.push({
+        id: new ObjectId(),
+        name: member.name,
+        team: member.team,
+        responses: items.map((item) => ({
+          formName: item.name,
+          completed: false
+        }))
+      })
+    });
+    const result = await db.collection("forms").insertOne({
+      _id: new ObjectId(),
+      name: name,
+      cols: items,
+      responses: responses
+    });
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating forms:", error);
