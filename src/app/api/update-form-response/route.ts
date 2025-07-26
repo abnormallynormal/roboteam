@@ -14,17 +14,17 @@ export async function PATCH(request: Request) {
       {
         _id: new ObjectId(document),
         "responses.name": username,
-        "responses.responses.formName": specificFormName.name,
+        "responses.memberResponses.formName": specificFormName.name,
       },
       {
         $set: {
-          "responses.$[user].responses.$[form].completed": bool,
+          "responses.$[user].memberResponses.$[form].completed": bool,
         },
       },
-      { 
+      {
         arrayFilters: [
           { "user.name": username },
-          { "form.formName": specificFormName.name},
+          { "form.formName": specificFormName.name },
         ],
       }
     );

@@ -57,10 +57,10 @@ export const columns = (
       );
     },
     cell: ({ row }: { row: any }) => {
-      const value = row.original.responses.find((response: any) => response.formName === item.name).completed;
+      console.log(row.original.name);
+      const value = row.original.memberResponses.find((response: any) => response.formName === item.name).completed;
       
-      console.log(typeof value);
-      console.log(row.original.name)
+      
       return (
         <Checkbox
           defaultChecked={value}

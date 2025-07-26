@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         id: new ObjectId(),
         name: member.name,
         team: member.team,
-        responses: items.map((item) => ({
+        memberResponses: items.map((item) => ({
           formName: item.name,
           completed: false
         }))

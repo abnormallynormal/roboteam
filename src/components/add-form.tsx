@@ -75,7 +75,9 @@ const formSchema = z
     }
   });
 
-export default function AddForm() {
+export default function AddForm(
+  {handleSubmit}: {handleSubmit: () => void}
+) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -108,6 +110,7 @@ export default function AddForm() {
           "Content-Type": "application/json",
         },
       });
+      handleSubmit();
     } catch (err) {
       console.error("Error submitting transaction:", err);
     }
@@ -163,7 +166,7 @@ export default function AddForm() {
                     <FormLabel>Payment amount</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter amount of items"
+                        placeholder="Enter dollar amount for payment"
                         type="number"
                         {...field}
                         value={field.value ?? ""} // Show empty string when undefined
@@ -251,7 +254,7 @@ export default function AddForm() {
                           <FormLabel>Payment amount</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter amount of items"
+                              placeholder="Enter dollar amount for payment"
                               type="number"
                               {...field}
                               value={field.value ?? ""} // Show empty string when undefined
@@ -278,7 +281,7 @@ export default function AddForm() {
               type="button"
               variant="secondary"
               className="w-full"
-              onClick={() => append({ name: "", type: "", amount: 0 })}
+              onClick={() => append({ name: "", type: "", amount: undefined })}
             >
               Add Item
             </Button>

@@ -40,9 +40,7 @@ export default function Forms() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [switchDetector, setSwitchDetector] = useState(false);
   const [display, setDisplay] = useState<any>(null);
-
-  // 2. Define a submit handler.
-
+  const [dialog, setDialog] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch(`/api/forms`);
@@ -94,7 +92,7 @@ export default function Forms() {
           <Card className="overflow-x-auto">
             <div className="font-semibold text-xl mx-4 relative">
               <div>Responses</div>
-              <Dialog>
+              <Dialog open={dialog} onOpenChange={setDialog}>
                 <DialogTrigger asChild>
                   <Button
                     variant="secondary"
@@ -108,7 +106,10 @@ export default function Forms() {
                   <DialogTitle className="mb-4">
                     Add new form tracker
                   </DialogTitle>
-                  <AddForm />
+                  <AddForm handleSubmit={() => {
+                    setSwitchDetector(!switchDetector)
+                    setDialog(false)
+                  }} />
                 </DialogContent>
               </Dialog>
             </div>
@@ -129,7 +130,7 @@ export default function Forms() {
                       id: response.id,
                       name: response.name,
                       team: response.team,
-                      responses: response.responses,
+                      memberResponses: response.memberResponses,
                     }))}
                   />
                 </div>
