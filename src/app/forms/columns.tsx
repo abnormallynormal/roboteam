@@ -50,7 +50,12 @@ export const columns = (
     header: () => {
       return item.type.toString() === "Payment" ? (
         <div>
-          {item.name} (${item.amount})
+          {item.name} (
+          {new Intl.NumberFormat("us-US", {
+            style: "currency",
+            currency: "CAD",
+          }).format(item.amount)}
+          )
         </div>
       ) : (
         <div>{item.name}</div>

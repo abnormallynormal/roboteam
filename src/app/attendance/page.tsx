@@ -3,7 +3,7 @@ import * as React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import Navbar from "@/components/Navigation";
-import { ListFilter } from "lucide-react";
+import { Filter, ListFilter } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
@@ -35,78 +35,81 @@ interface Member {
   _id: string;
   name: string;
   team: string;
-  status: string;
+  presentDates: string[];
+  absentDates: string[];
+  lateDates: string[];
 }
 type AttendanceStatus = "present" | "late" | "absent" | "unmarked";
 export default function Attendance() {
   const [switchDetector, setSwitchDetector] = useState(false);
-  const [totalMembers, setTotalMembers] = useState(0);
-  const [totalPresent, setTotalPresent] = useState(0);
-  const [totalAbsent, setTotalAbsent] = useState(0);
-  const [totalUnmarked, setTotalUnmarked] = useState(0);
   const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   useEffect(() => {
     const fetchData = async () => {
-      let count = 0;
       const result = await fetch("/api/get-members");
       const data = await result.json();
-      setTotalMembers(data.length);
-      let presentCount = 0;
-      let absentCount = 0;
-      let unmarkedCount = 0;
-      var s: AttendanceStatus;
       const temp: Member[] = [];
       data.forEach((member: any) => {
-        let recorded = false;
-        member.present.forEach((date: String) => {
-          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
-            presentCount++;
-            recorded = true;
-            s = "present";
-          }
+        const tempPresent: string[] = [];
+        const tempLate: string[] = [];
+        const tempAbsent: string[] = [];
+        member.present.forEach((date: string) => {
+          tempPresent.push(date.slice(0,10))
         });
-        member.late.forEach((date: String) => {
-          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
-            presentCount++;
-            recorded = true;
-            s = "late";
-          }
+        member.late.forEach((date: string) => {
+          tempLate.push(date.slice(0,10))
         });
-        member.absent.forEach((date: String) => {
-          if (date.slice(0, 10) === selectedDate.toISOString().slice(0, 10)) {
-            absentCount++;
-            recorded = true;
-            s = "absent";
-          }
+        member.absent.forEach((date: string) => {
+          tempAbsent.push(date.slice(0,10))
         });
-        if (!recorded) {
-          unmarkedCount++;
-          s = "unmarked";
-        }
         temp.push({
           _id: member._id,
           name: member.name,
           team: member.team,
-          status: s,
-        });
+          presentDates: tempPresent,
+          lateDates: tempLate,
+          absentDates: tempAbsent,
+        })
       });
       setMembers(temp);
-      setTotalPresent(presentCount);
-      setTotalAbsent(absentCount);
-      setTotalUnmarked(unmarkedCount);
+      console.log(temp)
     };
     fetchData();
-  }, [selectedDate, switchDetector]);
+  }, [switchDetector]);
 
   const updateAttendance = async (
     memberId: string,
     status: AttendanceStatus
   ) => {
-    setIsLoading(null);
+    setMembers((prevMembers) => {
+      return prevMembers.map((member) => {
+        if (member._id === memberId) {
+          const dateString = selectedDate.toISOString().slice(0,10);
+          const updatedMember = {
+            ...member,
+            presentDates: member.presentDates.filter((date) => date !== dateString),
+            lateDates: member.lateDates.filter((date) => date !== dateString),
+            absentDates: member.absentDates.filter((date) => date !== dateString),  
+          }
+          switch (status) {
+            case "present":
+              updatedMember.presentDates.push(dateString);
+              break;
+            case "late":
+              updatedMember.lateDates.push(dateString);
+              break;
+            case "absent":
+              updatedMember.absentDates.push(dateString);
+              break;
+          }
+          return updatedMember;
+        }
+        return member;
+      })
+    })
     try {
       const response = await fetch(`/api/members/${memberId}`, {
         // Replace with actual member ID
@@ -123,7 +126,6 @@ export default function Attendance() {
           status,
         }),
       });
-      setSwitchDetector(!switchDetector);
       if (!response.ok) {
         throw new Error("Failed to update attendance");
       }
@@ -156,69 +158,41 @@ export default function Attendance() {
         <div className="mb-8">
           Track member attendance and participation in team activities.
         </div>
-        <div className="grid grid-cols-4 gap-8 mb-8">
-          <Card className="p-5">
-            <div className="grid grid-cols-[5fr_1fr]">
-              <div>
-                <div className="mb-1">Total members</div>
-                <div className="font-bold text-3xl">{totalMembers}</div>
-                <div className="mt-1 text-sm">Active team members</div>
-              </div>
-              <div>
-                <Users />
-              </div>
+        <div className="grid grid-cols-[auto_1fr] gap-4">
+          <Card className="h-fit">
+            <div className="mx-6 mb-0 text-2xl font-bold">Calendar</div>
+            <div className="mx-6 mt-0 p-0">Select date to view attendance</div>
+            <div className="justify-items-center px-8">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(selectedDate) => {
+                  if (selectedDate) {
+                    setSelectedDate(selectedDate);
+                    console.log(members);
+                    console.log(selectedDate);
+                  }
+                }}
+                className="rounded-lg border [--cell-size:--spacing(9)]"
+                buttonVariant="ghost"
+              />
             </div>
           </Card>
-          <Card className="p-5">
-            <div className="grid grid-cols-[5fr_1fr]">
-              <div>
-                <div className="mb-1">Present Today</div>
-                <div className="font-bold text-3xl">{totalPresent}</div>
-                <div className="mt-1 text-sm">Active team members</div>
-              </div>
-              <div>
-                <UserCheck />
-              </div>
+          <Card className="h-fit">
+            <div className="mx-6 mb-0 text-2xl font-bold">
+              Attendance for {selectedDate.toISOString().slice(0, 10)}
             </div>
-          </Card>
-          <Card className="p-5">
-            <div className="grid grid-cols-[5fr_1fr]">
-              <div>
-                <div className="mb-1">Absent Today</div>
-                <div className="font-bold text-3xl">{totalAbsent}</div>
-
-                <div className="mt-1 text-sm">Member not present</div>
-              </div>
-              <div>
-                <UserRoundX />
-              </div>
-            </div>
-          </Card>
-          <Card className="p-5">
-            <div className="grid grid-cols-[5fr_1fr]">
-              <div>
-                <div className="mb-1">Not Marked</div>
-                <div className="font-bold text-3xl">{totalUnmarked}</div>
-                <div className="mt-1 text-sm">Pending attendance</div>
-              </div>
-              <div>
-                <Clock />
-              </div>
-            </div>
-          </Card>
-        </div>
-        <div className="grid grid-cols-[2fr_1fr] gap-8">
-          <Card>
-            <div className="mx-6 mb-0 text-2xl font-bold">Attendance</div>
-            <div className="mx-6 grid grid-cols-[1fr_auto] gap-6">
+            <div className="mx-6 grid grid-cols-[1fr_auto] gap-2">
               <Input
                 placeholder="Search for team members"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <ListFilter className="b-5" />
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="ghost">
+                    <Filter />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuLabel>Filter by team</DropdownMenuLabel>
@@ -253,14 +227,23 @@ export default function Attendance() {
             </div>
             <div className="space-y-2">
               {filteredMembers.map((member) => (
-                <Card key={member._id} className=" mx-6 my-2 p-4 p-4">
+                <Card key={member._id} className="mx-6 my-2 p-4">
                   <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
                     <div className="grid grid-rows-2">
-                      <div className="text-lg font-semibold">{member.name}</div>
+                      <Button
+                        className="justify-start gap-0 p-0 h-fit"
+                        variant="link"
+                      >
+                        <div className="text-lg font-semibold">
+                          {member.name}
+                        </div>
+                      </Button>
                       <div className="text-sm">{member.team}</div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 items-center">
-                      {member.status === "present" ? (
+                      {member.presentDates.includes(
+                        selectedDate.toISOString().slice(0, 10)
+                      ) ? (
                         <Button
                           variant="outline"
                           className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white"
@@ -280,7 +263,9 @@ export default function Attendance() {
                           {isLoading === member._id ? "..." : "Present"}
                         </Button>
                       )}
-                      {member.status === "late" ? (
+                      {member.lateDates.includes(
+                        selectedDate.toISOString().slice(0, 10)
+                      ) ? (
                         <Button
                           variant="outline"
                           className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white"
@@ -292,15 +277,15 @@ export default function Attendance() {
                         <Button
                           variant="outline"
                           className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white active:bg-yellow-700 active:border-yellow-700"
-                          onClick={() =>
-                            updateAttendance(member._id, "late")
-                          }
+                          onClick={() => updateAttendance(member._id, "late")}
                           disabled={isLoading === member._id}
                         >
                           {isLoading === member._id ? "..." : "Late"}
                         </Button>
                       )}
-                      {member.status === "absent" ? (
+                      {member.absentDates.includes(
+                        selectedDate.toISOString().slice(0, 10)
+                      ) ? (
                         <Button
                           variant="outline"
                           className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white"
@@ -312,9 +297,7 @@ export default function Attendance() {
                         <Button
                           variant="outline"
                           className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white active:bg-red-700 active:border-red-700"
-                          onClick={() =>
-                            updateAttendance(member._id, "absent")
-                          }
+                          onClick={() => updateAttendance(member._id, "absent")}
                           disabled={isLoading === member._id}
                         >
                           {isLoading === member._id ? "..." : "Absent"}
@@ -324,23 +307,6 @@ export default function Attendance() {
                   </div>
                 </Card>
               ))}
-            </div>
-          </Card>
-          <Card>
-            <div className="mx-6 mb-0 text-2xl font-bold">Calendar</div>
-            <div className="mx-6 mt-0 p-0">Select date to view attendance</div>
-            <div className="justify-items-center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(selectedDate) => {
-                  if (selectedDate) {
-                    setSelectedDate(selectedDate);
-                  }
-                }}
-                className="rounded-lg border [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
-                buttonVariant="ghost"
-              />
             </div>
           </Card>
         </div>
