@@ -3,7 +3,11 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import MarkItemReturned from "@/components/mark-item-returned";
@@ -18,8 +22,26 @@ export type BorrowedItem = {
   borrowedDate: string;
 };
 
+// Separate component for the cell content
+function ReturnButton({ missing }: { missing: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="default" className="w-full">
+          Mark as Returned
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="px-4 py-3">
+        <div className="font-semibold mb-2">Mark item as Returned</div>
+        <MarkItemReturned maxQ={missing} handleSubmit={() => setOpen(false)} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export const borrowedColumns: ColumnDef<BorrowedItem>[] = [
-  
   {
     accessorKey: "borrowerName",
     header: "Name",
@@ -60,20 +82,7 @@ export const borrowedColumns: ColumnDef<BorrowedItem>[] = [
     accessorKey: "button",
     header: "",
     cell: ({ row }) => {
-      const [open, setOpen] = useState(false);
-      return (
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="default" className="w-full">
-              Mark as Returned
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="px-4 py-3">
-            <div className="font-semibold mb-2">Mark item as Returned</div>
-            <MarkItemReturned maxQ={row.original.missing} handleSubmit={() => setOpen(false)} />
-          </PopoverContent>
-        </Popover>
-      );
+      return <ReturnButton missing={row.original.missing} />;
     },
   },
 ];
