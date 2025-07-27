@@ -14,10 +14,11 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Button } from "./ui/button";
+
 export default function Navbar() {
   return (
-    <div>
-      <NavigationMenu>
+    <div className="relative w-full flex justify-center mt-2">
+      <NavigationMenu viewport={false}>
         <NavigationMenuList>
           <NavigationMenuItem className="ml-4">
             <NavigationMenuLink
@@ -29,7 +30,7 @@ export default function Navbar() {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
-          <div className="grid grid-cols-5">
+          <div className="flex">
             <NavigationMenuItem>
               <NavigationMenuLink
                 asChild
@@ -41,60 +42,63 @@ export default function Navbar() {
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/budgeting">Budget</Link>
-              </NavigationMenuLink>
+              <NavigationMenuTrigger>Finances</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/budgeting">Budget</Link>
+                </NavigationMenuLink>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/partsorders">Parts Orders</Link>
+                </NavigationMenuLink>
+              </NavigationMenuContent>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/partsorders">Parts Orders</Link>
-              </NavigationMenuLink>
+              <NavigationMenuTrigger>
+                Inventory Management
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/inventory">Inventory Counts</Link>
+                </NavigationMenuLink>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/signoutform">Sign Out Form</Link>
+                </NavigationMenuLink>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/signoutsheet">Sign Out Form Tracker</Link>
+                </NavigationMenuLink>
+              </NavigationMenuContent>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/inventory">Inventory</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/attendance">Attendance</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/signoutform">Signout</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/signoutsheet">Sheet</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/forms">Forms</Link>
-              </NavigationMenuLink>
+              <NavigationMenuTrigger>Administration</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/attendance">Attendance</Link>
+                </NavigationMenuLink>
+                <NavigationMenuLink
+                  asChild
+                  className={navigationMenuTriggerStyle()}
+                >
+                  <Link href="/forms">Forms</Link>
+                </NavigationMenuLink>
+              </NavigationMenuContent>
             </NavigationMenuItem>
           </div>
           <NavigationMenuItem className="mr-4">
