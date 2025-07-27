@@ -13,12 +13,12 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 const category = [
-  { label: "Parts Orders", value: "parts-orders" },
-  { label: "Tournament Fees", value: "tournament" },
-  { label: "Food", value: "food" },
-  { label: "Sponsorships", value: "sponsors" },
-  { label: "Grants", value: "grants" },
-  { label: "Miscellaneous", value: "misc" },
+  { label: "Parts Orders", value: "Parts Orders" },
+  { label: "Tournament Fees", value: "Tournament Fees" },
+  { label: "Food", value: "Food" },
+  { label: "Sponsorships", value: "Sponsorships" },
+  { label: "Grants", value: "Grants" },
+  { label: "Miscellaneous", value: "Miscellaneous" },
 ];
 import {
   Table,

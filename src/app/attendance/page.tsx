@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { boolean, record } from "zod";
+import { AttendanceCalendar } from "@/components/attendancecalendar";
 
 interface Member {
   _id: string;
@@ -233,91 +234,97 @@ export default function Attendance() {
               </DropdownMenu>
             </div>
             <div className="space-y-2">
-              {filteredMembers.map((member) => (
-                <Card key={member._id} className="mx-6 my-2 p-4">
-                  <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
-                    <div className="grid grid-rows-2">
-                      <Button
-                        className="justify-start gap-0 p-0 h-fit"
-                        variant="link"
-                        onClick={() => {
-                          setDialogOpen(true);
-                          setInspectedMember(member);
-                        }}
-                      >
-                        <div className="text-lg font-semibold">
-                          {member.name}
-                        </div>
-                      </Button>
-                      <div className="text-sm">{member.team}</div>
+              {filteredMembers.length === 0 ? (
+                <div className="text-center">No members found</div>
+              ) : (
+                filteredMembers.map((member) => (
+                  <Card key={member._id} className="mx-6 my-2 p-4">
+                    <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
+                      <div className="grid grid-rows-2">
+                        <Button
+                          className="justify-start gap-0 p-0 h-fit"
+                          variant="link"
+                          onClick={() => {
+                            setDialogOpen(true);
+                            setInspectedMember(member);
+                          }}
+                        >
+                          <div className="text-lg font-semibold">
+                            {member.name}
+                          </div>
+                        </Button>
+                        <div className="text-sm">{member.team}</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 items-center">
+                        {member.presentDates.includes(
+                          selectedDate.toISOString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Present"}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                            onClick={() =>
+                              updateAttendance(member._id, "present")
+                            }
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Present"}
+                          </Button>
+                        )}
+                        {member.lateDates.includes(
+                          selectedDate.toISOString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Late"}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                            onClick={() => updateAttendance(member._id, "late")}
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Late"}
+                          </Button>
+                        )}
+                        {member.absentDates.includes(
+                          selectedDate.toISOString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Absent"}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                            onClick={() =>
+                              updateAttendance(member._id, "absent")
+                            }
+                            disabled={isLoading === member._id}
+                          >
+                            {isLoading === member._id ? "..." : "Absent"}
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 items-center">
-                      {member.presentDates.includes(
-                        selectedDate.toISOString().slice(0, 10)
-                      ) ? (
-                        <Button
-                          variant="outline"
-                          className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white"
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Present"}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white active:bg-green-700 active:border-green-700"
-                          onClick={() =>
-                            updateAttendance(member._id, "present")
-                          }
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Present"}
-                        </Button>
-                      )}
-                      {member.lateDates.includes(
-                        selectedDate.toISOString().slice(0, 10)
-                      ) ? (
-                        <Button
-                          variant="outline"
-                          className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white"
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Late"}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white active:bg-yellow-700 active:border-yellow-700"
-                          onClick={() => updateAttendance(member._id, "late")}
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Late"}
-                        </Button>
-                      )}
-                      {member.absentDates.includes(
-                        selectedDate.toISOString().slice(0, 10)
-                      ) ? (
-                        <Button
-                          variant="outline"
-                          className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white"
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Absent"}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white active:bg-red-700 active:border-red-700"
-                          onClick={() => updateAttendance(member._id, "absent")}
-                          disabled={isLoading === member._id}
-                        >
-                          {isLoading === member._id ? "..." : "Absent"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))
+              )}
             </div>
           </Card>
         </div>
@@ -327,33 +334,20 @@ export default function Attendance() {
           <DialogHeader>
             <DialogTitle>{inspectedMember?.name}</DialogTitle>
             <DialogDescription>{inspectedMember?.team}</DialogDescription>
-            <Calendar
-              mode="single"
-              selected={selectedDialogDate}
-              onSelect={(selectedDate) => {
-                if (selectedDate) {
-                  setSelectedDialogDate(selectedDate);
-                }
-              }}
-              modifiers={{
-                presentDates: inspectedMember?.presentDates?.map(
-                  (date) => new Date(date)
-                ),
-                lateDates: inspectedMember?.lateDates?.map(
-                  (date) => new Date(date)
-                ),
-                absentDates: inspectedMember?.absentDates?.map(
-                  (date) => new Date(date)
-                ),
-              }}
-              modifiersClassNames={{
-                presentDates: "bg-green-500 hover:!bg-green-400",
-              
-                
-              }}
-              className="rounded-lg border [--cell-size:--spacing(9)]"
-              buttonVariant="ghost"
-            />
+            <div className="grid grid-cols-[auto_1fr] gap-4">
+              <AttendanceCalendar
+                mode="single"
+                selected={selectedDate}
+                presentDates={inspectedMember?.presentDates}
+                absentDates={inspectedMember?.absentDates}
+                lateDates={inspectedMember?.lateDates}
+              />
+              <div>
+                <div>Present: {inspectedMember?.presentDates.length}</div>
+                <div>Absent: {inspectedMember?.absentDates.length}</div>
+                <div>Late: {inspectedMember?.lateDates.length}</div>
+              </div>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>

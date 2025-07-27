@@ -5,15 +5,14 @@ import { Card } from "@/components/ui/card";
 import {
   Tabs,
   TabsList,
-  AlteredTabsList,
   TabsContent,
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { columns, Item } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
-import { AlteredCard } from "@/components/ui/altered-card";
-import AddItemForm from "@/components/add-item-form";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import {
   Popover,
   PopoverTrigger,
@@ -33,20 +32,31 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name must be at least 1 character.",
-  }),
-});
+
 
 export default function Inventory() {
   const [collections, setCollections] = useState<any[]>([]);
   const [switchDetector, setSwitchDetector] = useState(false);
   const [display, setDisplay] = useState<any>(null);
+  const formSchema = z.object({
+  name: z.string().min(1, {
+    message: "Name must be at least 1 character.",
+  }),
+  defaultItemsChecked: z.string().optional()
+}).superRefine((data, ctx) => {
+  if(collections.find(collection => collection.collectionName === data.name)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Collection already exists",
+      path: ["name"]
+    });
+  }
+});
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      defaultItemsChecked: "true"
     },
   });
 
@@ -57,12 +67,14 @@ export default function Inventory() {
         method: "POST",
         body: JSON.stringify({
           name: values.name,
+          defaultItems: values.defaultItemsChecked
         }),
         headers: {
           "Content-Type": "application/json",
         },
       });
       setSwitchDetector(!switchDetector);
+      form.reset()
     } catch (err) {
       console.error("Error submitting transaction:", err);
     }
@@ -72,6 +84,7 @@ export default function Inventory() {
       const result = await fetch(`/api/inventory`);
       const data = await result.json();
       const temp: any[] = [];
+      console.log(data)
       Object.entries(data).forEach((collection: any) => {
         temp.push({
           collectionName: collection[0],
@@ -97,12 +110,15 @@ export default function Inventory() {
           Track parts, components, and equipment for your team.
         </div>
         <div className="grid grid-cols-[2fr_7fr] gap-6">
-          <Card className="h-fit gap-3">
+          <Card className="h-fit gap-1">
             <div className="font-semibold mx-4 mb-2 text-xl">
               Select inventory count
             </div>
             {collections.map((collection) => (
-              <div className="flex items-center mx-4" key = {collection.collectionName}>
+              <div
+                className="flex items-center mx-4"
+                key={collection.collectionName}
+              >
                 <File />
                 <Button
                   value={collection.collectionName}
@@ -143,13 +159,37 @@ export default function Inventory() {
                         name="name"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="mb-2">Name of new inventory count</FormLabel>
+                            <FormLabel className="mb-2">
+                              Name of new inventory count
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 placeholder="Inventory September 2025"
                                 {...field}
                               />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="defaultItemsChecked"
+                        render={({ field }) => (
+                          <FormItem className="flex">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === "true"}
+                                onCheckedChange={(checked) => {
+                                  return checked
+                                    ? field.onChange("true")
+                                    : field.onChange("false");
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="mb-2">
+                              Add default inventory items?
+                            </FormLabel>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -168,7 +208,7 @@ export default function Inventory() {
               ) : (
                 <div className="px-4 py-2 min-w-0">
                   <Tabs defaultValue="g-team" className="w-full">
-                    <TabsList className="bg-[#F5F5F5] w-full">
+                    <TabsList className="w-full">
                       <TabsTrigger value="g-team">82855G</TabsTrigger>
                       <TabsTrigger value="s-team">82855S</TabsTrigger>
                       <TabsTrigger value="t-team">82855T</TabsTrigger>
@@ -188,7 +228,9 @@ export default function Inventory() {
                               team.team,
                               () => setSwitchDetector(!switchDetector)
                             )}
-                            onItemAdded={() => setSwitchDetector(!switchDetector)}
+                            onItemAdded={() =>
+                              setSwitchDetector(!switchDetector)
+                            }
                             data={team.items.map((item: any) => ({
                               id: item.id,
                               name: item.name,

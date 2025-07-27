@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       {
         $push: {
           items: {
-            id: new ObjectId().toString(),
+            id: new ObjectId(),
             name: name,
             category: category,
             amount: amount,
@@ -46,7 +46,7 @@ export async function PATCH(request: Request) {
     const result = await db
       .collection(collection)
       .updateOne(
-        { team: team, "items.id": id },
+        { team: team, "items.id": new ObjectId(id) },
         { $set: { "items.$.name": name, "items.$.category": category, "items.$.amount": amount, "items.$.description": description } }
       );
 

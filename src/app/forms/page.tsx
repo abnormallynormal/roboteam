@@ -69,7 +69,7 @@ export default function Forms() {
           Track and collect forms and payments from members.
         </div>
         <div className="grid grid-cols-[2fr_7fr] gap-6">
-          <Card className="h-fit gap-3">
+          <Card className="h-fit gap-1">
             <div className="font-semibold mx-4 mb-2 text-xl">Select form</div>
             {documents.map((document) => (
               <div className="flex items-center mx-4" key={document._id}>

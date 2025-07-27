@@ -1,8 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
-import { CircleCheckIcon, CircleHelpIcon, CircleIcon } from "lucide-react";
-
+import { ModeToggle } from "./modetoggle";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -111,6 +110,7 @@ export default function Navbar() {
           
         </NavigationMenuList>
       </NavigationMenu>
+      <ModeToggle/>
     </div>
   );
 }

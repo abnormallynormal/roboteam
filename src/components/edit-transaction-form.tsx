@@ -27,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   type: z.string({
@@ -38,17 +39,21 @@ const formSchema = z.object({
   amount: z
     .string()
     .refine((val) => !isNaN(Number(val)), { message: "Invalid price" })
-    .refine((val) => Number(val) >= 0.01, { message: "Please enter an amount greater than 0.00." }),
+    .refine((val) => Number(val) >= 0.01, {
+      message: "Please enter an amount greater than 0.00.",
+    }),
   category: z.string({
     required_error: "Please select a category",
   }),
 });
 
 const category = [
-  { value: "food", label: "Food" },
-  { value: "clothes", label: "Clothes" },
-  { value: "entertainment", label: "Entertainment" },
-  { value: "other", label: "Other" },
+  { label: "Parts Orders", value: "Parts Orders" },
+  { label: "Tournament Fees", value: "Tournament Fees" },
+  { label: "Food", value: "Food" },
+  { label: "Sponsorships", value: "Sponsorships" },
+  { label: "Grants", value: "Grants" },
+  { label: "Miscellaneous", value: "Miscellaneous" },
 ];
 
 const type = [
@@ -118,60 +123,26 @@ export default function EditTransactionForm({
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Transaction Type</FormLabel>
+              <FormLabel className="mb-1">Transaction Type</FormLabel>
               <FormControl>
-                <Popover>
-                  <PopoverTrigger asChild>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="grid grid-cols-2"
+                >
+                  <FormItem className="flex items-center gap-3">
                     <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value
-                          ? type.find((type) => type.value === field.value)
-                              ?.label
-                          : "Select type"}
-                        <ChevronsUpDown className="opacity-50" />
-                      </Button>
+                      <RadioGroupItem value="Revenue" />
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0">
-                    <Command>
-                      <CommandInput
-                        placeholder="Search category..."
-                        className="h-9"
-                      />
-                      <CommandList>
-                        <CommandEmpty>No type found.</CommandEmpty>
-                        <CommandGroup>
-                          {type.map((type) => (
-                            <CommandItem
-                              value={type.label}
-                              key={type.value}
-                              onSelect={() => {
-                                form.setValue("type", type.value);
-                              }}
-                            >
-                              {type.label}
-                              <Check
-                                className={cn(
-                                  "ml-auto",
-                                  type.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                    <FormLabel className="font-normal">Revenue</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center gap-3">
+                    <FormControl>
+                      <RadioGroupItem value="Expense" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Expense</FormLabel>
+                  </FormItem>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

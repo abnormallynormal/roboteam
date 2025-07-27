@@ -45,10 +45,15 @@ const formSchema = z.object({
 });
 
 const category = [
-  { value: "Food", label: "Food" },
-  { value: "Clothes", label: "Clothes" },
-  { value: "Entertainment", label: "Entertainment" },
-  { value: "Other", label: "Other" },
+  { value: "Metal", label: "Metal" },
+  { value: "Wheels", label: "Wheels" },
+  { value: "Motors", label: "Motors" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Gears", label: "Gears" },
+  { value: "Pneumatics", label: "Pneumatics" },
+  { value: "Tools", label: "Tools" },
+  { value: "Game Elements", label: "Game Elements" },
+  { value: "Miscellaneous", label: "Miscellaneous" },
 ];
 interface AddItemFormProps {
   collection: string;
@@ -88,6 +93,7 @@ export default function AddItemForm({
         },
       });
       onItemAdded?.();
+      form.reset()
     } catch (err) {
       console.error("Error submitting transaction:", err);
     }

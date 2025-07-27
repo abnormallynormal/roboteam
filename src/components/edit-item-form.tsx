@@ -3,7 +3,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 import {
   Command,
   CommandEmpty,
@@ -38,18 +38,26 @@ const formSchema = z.object({
   }),
   amount: z
     .string()
+    .min(1, { message: "Amount is required" })
     .refine((val) => !isNaN(Number(val)), { message: "Invalid amount" })
-    .refine((val) => Number(val) >= 0.01, { message: "Amount must be at least 0." }),
+    .refine((val) => Number(val) >= 0, {
+      message: "Amount must be at least 0.",
+    }),
   description: z.string().min(0, {
     message: "Description must be at least 0 characters.",
   }),
 });
 
 const category = [
-  { value: "Food", label: "Food" },
-  { value: "Clothes", label: "Clothes" },
-  { value: "Entertainment", label: "Entertainment" },
-  { value: "Other", label: "Other" },
+  { value: "Metal", label: "Metal" },
+  { value: "Wheels", label: "Wheels" },
+  { value: "Motors", label: "Motors" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Gears", label: "Gears" },
+  { value: "Pneumatics", label: "Pneumatics" },
+  { value: "Tools", label: "Tools" },
+  { value: "Game Elements", label: "Game Elements" },
+  { value: "Miscellaneous", label: "Miscellaneous" },
 ];
 interface AddItemFormProps {
   collection: string;
@@ -93,7 +101,7 @@ export default function EditItemForm({
           name: values.name,
           category: values.category,
           amount: values.amount,
-          description: values.description
+          description: values.description,
         }),
         headers: {
           "Content-Type": "application/json",

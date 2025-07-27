@@ -58,28 +58,28 @@ export const returnedColumns: ColumnDef<ReturnedItem>[] = [
     sortingFn: "datetime",
     sortDescFirst: true,
   },
-  {
-    accessorKey: "button",
-    header: "",
-    cell: ({ row }) => {
-      const item = row.original;
-      console.log(item);
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit item</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500">
-              Delete item
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
+  // {
+  //   accessorKey: "button",
+  //   header: "",
+  //   cell: ({ row }) => {
+  //     const item = row.original;
+  //     console.log(item);
+  //     return (
+  //       <DropdownMenu>
+  //         <DropdownMenuTrigger asChild>
+  //           <Button variant="ghost" className="h-8 w-8 p-0">
+  //             <MoreHorizontal className="h-4 w-4" />
+  //           </Button>
+  //         </DropdownMenuTrigger>
+  //         <DropdownMenuContent align="end">
+  //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+  //           <DropdownMenuItem>Edit item</DropdownMenuItem>
+  //           <DropdownMenuItem className="text-red-500">
+  //             Delete item
+  //           </DropdownMenuItem>
+  //         </DropdownMenuContent>
+  //       </DropdownMenu>
+  //     );
+  //   },
+  // },
 ];

@@ -24,6 +24,7 @@ import {
   SortingState,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
   ColumnFiltersState,
@@ -48,6 +49,18 @@ interface DataTableProps<TData extends Item, TValue> {
   onItemAdded: () => void;
 }
 
+const inventoryCategories = [
+  { value: "Metal", label: "Metal" },
+  { value: "Wheels", label: "Wheels" },
+  { value: "Motors", label: "Motors" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Gears", label: "Gears" },
+  { value: "Pneumatics", label: "Pneumatics" },
+  { value: "Tools", label: "Tools" },
+  { value: "Game Elements", label: "Game Elements" },
+  { value: "Miscellaneous", label: "Miscellaneous" },
+];
+
 export function DataTable<TData extends Item, TValue>({
   columns,
   data,
@@ -59,7 +72,9 @@ export function DataTable<TData extends Item, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [item, setItem] = useState<{data: TData, selected: string} | undefined>();
+  const [item, setItem] = useState<
+    { data: TData; selected: string } | undefined
+  >();
 
   const handleCheckboxChange = ({
     category,
@@ -93,6 +108,7 @@ export function DataTable<TData extends Item, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onSortingChange: setSorting,
@@ -128,12 +144,12 @@ export function DataTable<TData extends Item, TValue>({
               </div>
               <div className="my-2 text-sm">Category</div>
               <div className="flex flex-wrap gap-3">
-                {["Food", "Clothes", "Entertainment"].map((category) => (
-                  <div key={category} className="flex items-center gap-2">
+                {inventoryCategories.map((category) => (
+                  <div key={category.value} className="flex items-center gap-2">
                     <Checkbox
-                      id={category}
+                      id={category.value}
                       checked={checkedCategories.some(
-                        (item: any) => item === category
+                        (item: any) => item === category.value
                       )}
                       onCheckedChange={(checked) => {
                         setColumnFilters((prev: any) => {
@@ -141,12 +157,12 @@ export function DataTable<TData extends Item, TValue>({
                             (filter: any) => filter.id === "category"
                           );
                           if (checked) {
-                            handleCheckboxChange({ category, checked: true });
+                            handleCheckboxChange({ category: category.value, checked: true });
                             if (existingCategoryFilter) {
                               // Update existing filter
                               const updatedValue = [
                                 ...existingCategoryFilter.value,
-                                category,
+                                category.value,
                               ];
                               return prev.map((filter: any) =>
                                 filter.id === "category"
@@ -157,18 +173,18 @@ export function DataTable<TData extends Item, TValue>({
                               // Create new filter
                               return prev.concat({
                                 id: "category",
-                                value: [category],
+                                value: [category.value],
                               });
                             }
                           } else {
                             handleCheckboxChange({
-                              category,
+                              category: category.value,
                               checked: false,
                             });
                             if (existingCategoryFilter) {
                               const updatedValue =
                                 existingCategoryFilter.value.filter(
-                                  (val: string) => val != category
+                                  (val: string) => val != category.value
                                 );
                               if (updatedValue.length === 0) {
                                 // Remove entire filter if no categories left
@@ -189,7 +205,7 @@ export function DataTable<TData extends Item, TValue>({
                         });
                       }}
                     />
-                    <Label htmlFor={category}>{category}</Label>
+                    <Label htmlFor={category.value}>{category.label}</Label>
                   </div>
                 ))}
               </div>
@@ -251,8 +267,12 @@ export function DataTable<TData extends Item, TValue>({
                             : "text-left py-0"
                         }
                         onDoubleClick={() => {
-                          setItem({data: row.original, selected: cell.column.id});
-                          setIsDialogOpen(true)
+                          setItem({
+                            data: row.original,
+                            selected: cell.column.id,
+                          });
+                          console.log(cell.column.id);
+                          setIsDialogOpen(true);
                         }}
                       >
                         {flexRender(
@@ -277,6 +297,24 @@ export function DataTable<TData extends Item, TValue>({
           </TableBody>
         </Table>
       </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
       <Dialog open={isDialogOpen} onOpenChange={() => setIsDialogOpen(false)}>
         <DialogContent>
           <DialogHeader>
@@ -291,7 +329,7 @@ export function DataTable<TData extends Item, TValue>({
             amount={item?.data.amount}
             description={item?.data.description}
             onItemAdded={() => {
-              setIsDialogOpen(false)
+              setIsDialogOpen(false);
               onItemAdded?.();
             }}
           />
