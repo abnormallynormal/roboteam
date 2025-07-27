@@ -10,6 +10,12 @@ import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -343,9 +349,42 @@ export default function Attendance() {
                 lateDates={inspectedMember?.lateDates}
               />
               <div>
-                <div>Present: {inspectedMember?.presentDates.length}</div>
-                <div>Absent: {inspectedMember?.absentDates.length}</div>
-                <div>Late: {inspectedMember?.lateDates.length}</div>
+                <Accordion type="multiple" >
+                  <AccordionItem value="present">
+                    <AccordionTrigger>
+                      Present: {inspectedMember?.presentDates.length}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {inspectedMember?.presentDates.map((date) => {
+                        return <div key={date}>{date}</div>;
+                      })}
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="late">
+                    <AccordionTrigger>
+                      Late: {inspectedMember?.lateDates.length}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {inspectedMember?.lateDates.map((date) => {
+                        return <div key={date}>{date}</div>;
+                      })}
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="absent">
+                    <AccordionTrigger>
+                      Absent: {inspectedMember?.absentDates.length}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      {inspectedMember?.absentDates.map((date) => {
+                        return (
+                          <div key={date}>
+                            {date}
+                          </div>
+                        )
+                      })}
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
             </div>
           </DialogHeader>

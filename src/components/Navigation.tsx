@@ -98,6 +98,7 @@ export default function Navbar() {
             </NavigationMenuItem>
           </div>
           <NavigationMenuItem className="mr-4">
+            <ModeToggle />
             <NavigationMenuLink
               asChild
               className={navigationMenuTriggerStyle()}
@@ -107,10 +108,8 @@ export default function Navbar() {
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
-          
         </NavigationMenuList>
       </NavigationMenu>
-      <ModeToggle/>
     </div>
   );
 }
