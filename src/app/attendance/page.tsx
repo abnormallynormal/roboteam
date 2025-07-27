@@ -3,19 +3,10 @@ import * as React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import Navbar from "@/components/Navigation";
-import { Filter, ListFilter } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Users, UserCheck, UserRoundX, Clock, Search } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,7 +18,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { boolean, record } from "zod";
 
@@ -44,9 +42,14 @@ export default function Attendance() {
   const [switchDetector, setSwitchDetector] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDialogDate, setSelectedDialogDate] = useState<Date>(
+    new Date()
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [inspectedMember, setInspectedMember] = useState<Member>();
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch("/api/get-members");
@@ -57,13 +60,13 @@ export default function Attendance() {
         const tempLate: string[] = [];
         const tempAbsent: string[] = [];
         member.present.forEach((date: string) => {
-          tempPresent.push(date.slice(0,10))
+          tempPresent.push(date.slice(0, 10));
         });
         member.late.forEach((date: string) => {
-          tempLate.push(date.slice(0,10))
+          tempLate.push(date.slice(0, 10));
         });
         member.absent.forEach((date: string) => {
-          tempAbsent.push(date.slice(0,10))
+          tempAbsent.push(date.slice(0, 10));
         });
         temp.push({
           _id: member._id,
@@ -72,10 +75,10 @@ export default function Attendance() {
           presentDates: tempPresent,
           lateDates: tempLate,
           absentDates: tempAbsent,
-        })
+        });
       });
       setMembers(temp);
-      console.log(temp)
+      console.log(temp);
     };
     fetchData();
   }, [switchDetector]);
@@ -87,13 +90,17 @@ export default function Attendance() {
     setMembers((prevMembers) => {
       return prevMembers.map((member) => {
         if (member._id === memberId) {
-          const dateString = selectedDate.toISOString().slice(0,10);
+          const dateString = selectedDate.toISOString().slice(0, 10);
           const updatedMember = {
             ...member,
-            presentDates: member.presentDates.filter((date) => date !== dateString),
+            presentDates: member.presentDates.filter(
+              (date) => date !== dateString
+            ),
             lateDates: member.lateDates.filter((date) => date !== dateString),
-            absentDates: member.absentDates.filter((date) => date !== dateString),  
-          }
+            absentDates: member.absentDates.filter(
+              (date) => date !== dateString
+            ),
+          };
           switch (status) {
             case "present":
               updatedMember.presentDates.push(dateString);
@@ -108,8 +115,8 @@ export default function Attendance() {
           return updatedMember;
         }
         return member;
-      })
-    })
+      });
+    });
     try {
       const response = await fetch(`/api/members/${memberId}`, {
         // Replace with actual member ID
@@ -233,6 +240,10 @@ export default function Attendance() {
                       <Button
                         className="justify-start gap-0 p-0 h-fit"
                         variant="link"
+                        onClick={() => {
+                          setDialogOpen(true);
+                          setInspectedMember(member);
+                        }}
                       >
                         <div className="text-lg font-semibold">
                           {member.name}
@@ -311,6 +322,41 @@ export default function Attendance() {
           </Card>
         </div>
       </div>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{inspectedMember?.name}</DialogTitle>
+            <DialogDescription>{inspectedMember?.team}</DialogDescription>
+            <Calendar
+              mode="single"
+              selected={selectedDialogDate}
+              onSelect={(selectedDate) => {
+                if (selectedDate) {
+                  setSelectedDialogDate(selectedDate);
+                }
+              }}
+              modifiers={{
+                presentDates: inspectedMember?.presentDates?.map(
+                  (date) => new Date(date)
+                ),
+                lateDates: inspectedMember?.lateDates?.map(
+                  (date) => new Date(date)
+                ),
+                absentDates: inspectedMember?.absentDates?.map(
+                  (date) => new Date(date)
+                ),
+              }}
+              modifiersClassNames={{
+                presentDates: "bg-green-500 hover:!bg-green-400",
+              
+                
+              }}
+              className="rounded-lg border [--cell-size:--spacing(9)]"
+              buttonVariant="ghost"
+            />
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
