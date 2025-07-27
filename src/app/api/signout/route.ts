@@ -44,16 +44,21 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-  
 }
 
 export async function PATCH(request: Request) {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    const { email, item, originalQuantity, returnQuantity } = await request.json();
+    const { email, item, originalQuantity, returnQuantity } =
+      await request.json();
     const db = client.db("roboteam");
-    const result = await db.collection("signout").updateOne({ _id: new ObjectId(item as string) }, {$set: {remaining: (originalQuantity-returnQuantity)}});
+    const result = await db
+      .collection("signout")
+      .updateOne(
+        { _id: new ObjectId(item as string) },
+        { $set: { remaining: originalQuantity - returnQuantity } }
+      );
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error updating transaction:", error);

@@ -78,7 +78,9 @@ export default function SignInOutTracking() {
             <TabsTrigger value="returned">Returned Items</TabsTrigger>
           </TabsList>
           <TabsContent value="borrowed">
-            <BorrowedTable columns={borrowedColumns} data={toBeReturned} />
+            <BorrowedTable columns={borrowedColumns(() => {
+              setSwitchDetector(!switchDetector);
+            })} data={toBeReturned} />
           </TabsContent>
           <TabsContent value="returned">
             <ReturnedTable columns={returnedColumns} data={returned} />

@@ -8,8 +8,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import MarkItemReturned from "@/components/mark-item-returned";
 
 export type BorrowedItem = {
@@ -23,7 +21,7 @@ export type BorrowedItem = {
 };
 
 // Separate component for the cell content
-function ReturnButton({ missing }: { missing: number }) {
+function ReturnButton({ missing, value, name, updateTable}: { missing: number , value: string, name: string, updateTable: () => void}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -35,13 +33,18 @@ function ReturnButton({ missing }: { missing: number }) {
       </PopoverTrigger>
       <PopoverContent className="px-4 py-3">
         <div className="font-semibold mb-2">Mark item as Returned</div>
-        <MarkItemReturned maxQ={missing} handleSubmit={() => setOpen(false)} />
+        <MarkItemReturned maxQ={missing} value={value} name={name} handleSubmit={() => {
+          setOpen(false);
+          updateTable();
+        }} />
       </PopoverContent>
     </Popover>
   );
 }
 
-export const borrowedColumns: ColumnDef<BorrowedItem>[] = [
+export const borrowedColumns = (
+  onItemAdded: () => void
+): ColumnDef<BorrowedItem>[] => [
   {
     accessorKey: "borrowerName",
     header: "Name",
@@ -82,7 +85,7 @@ export const borrowedColumns: ColumnDef<BorrowedItem>[] = [
     accessorKey: "button",
     header: "",
     cell: ({ row }) => {
-      return <ReturnButton missing={row.original.missing} />;
+      return <ReturnButton missing={row.original.missing} value={row.original.value} name={row.original.borrowerName} updateTable={onItemAdded} />;
     },
   },
 ];

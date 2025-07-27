@@ -15,7 +15,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-export default function MarkItemReturned({ maxQ, handleSubmit}: { maxQ: number, handleSubmit: () => void }) {
+export default function MarkItemReturned({
+  maxQ,
+  value,
+  name,
+  handleSubmit,
+}: {
+  maxQ: number;
+  value: string;
+  name: string;
+  handleSubmit: () => void;
+}) {
   const formSchema = z
     .object({
       selection: z.string().min(1, {
@@ -62,9 +72,23 @@ export default function MarkItemReturned({ maxQ, handleSubmit}: { maxQ: number, 
       partialReturned: undefined,
     },
   });
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    form.reset()
+    try {
+      await fetch(`/api/signout`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          email: name,
+          item: value,
+          originalQuantity: maxQ,
+          returnQuantity: values.selection === "full" ? maxQ : values.partialReturned,
+        }),
+      });
+    } catch (error) {
+      console.error("Error updating form response:", error);
+    }
+    handleSubmit();
+    form.reset();
   }
   return (
     <Form {...form}>
@@ -126,10 +150,13 @@ export default function MarkItemReturned({ maxQ, handleSubmit}: { maxQ: number, 
         )}
         <div className="grid grid-cols-2 gap-4">
           <Button type="submit">Submit</Button>
-          <Button variant="secondary" onClick={() =>{
-            form.reset();
-            handleSubmit();
-          }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              form.reset();
+              handleSubmit();
+            }}
+          >
             Cancel
           </Button>
         </div>
