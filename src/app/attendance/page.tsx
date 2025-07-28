@@ -59,7 +59,6 @@ export default function Attendance() {
   const [inspectedMember, setInspectedMember] = useState<Member>();
   useEffect(() => {
     const fetchData = async () => {
-      console.log(selectedDate.toISOString())
       const result = await fetch("/api/get-members");
       const data = await result.json();
       const temp: Member[] = [];
@@ -98,7 +97,7 @@ export default function Attendance() {
     setMembers((prevMembers) => {
       return prevMembers.map((member) => {
         if (member._id === memberId) {
-          const dateString = selectedDate.toISOString().slice(0, 10);
+          const dateString = selectedDate.toLocaleDateString().slice(0, 10);
           const updatedMember = {
             ...member,
             presentDates: member.presentDates.filter(
@@ -137,7 +136,7 @@ export default function Attendance() {
             selectedDate.getFullYear(),
             selectedDate.getMonth(),
             selectedDate.getDate()
-          ).toISOString(),
+          ).toLocaleDateString(),
           status,
         }),
       });
@@ -264,7 +263,7 @@ export default function Attendance() {
                       </div>
                       <div className="grid grid-cols-3 gap-2 items-center">
                         {member.presentDates.includes(
-                          selectedDate.toISOString().slice(0, 10)
+                          selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
                           <Button
                             variant="outline"
@@ -286,7 +285,7 @@ export default function Attendance() {
                           </Button>
                         )}
                         {member.lateDates.includes(
-                          selectedDate.toISOString().slice(0, 10)
+                          selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
                           <Button
                             variant="outline"
@@ -306,7 +305,7 @@ export default function Attendance() {
                           </Button>
                         )}
                         {member.absentDates.includes(
-                          selectedDate.toISOString().slice(0, 10)
+                          selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
                           <Button
                             variant="outline"
