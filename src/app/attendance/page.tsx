@@ -75,6 +75,9 @@ export default function Attendance() {
         member.absent.forEach((date: string) => {
           tempAbsent.push(date.slice(0, 10));
         });
+        tempPresent.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
+        tempLate.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
+        tempAbsent.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
         temp.push({
           _id: member._id,
           name: member.name,
