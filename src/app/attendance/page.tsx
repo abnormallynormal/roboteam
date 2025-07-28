@@ -59,6 +59,7 @@ export default function Attendance() {
   const [inspectedMember, setInspectedMember] = useState<Member>();
   useEffect(() => {
     const fetchData = async () => {
+      console.log(selectedDate.toISOString())
       const result = await fetch("/api/get-members");
       const data = await result.json();
       const temp: Member[] = [];
@@ -194,7 +195,7 @@ export default function Attendance() {
           </Card>
           <Card className="h-fit">
             <div className="mx-6 mb-0 text-2xl font-bold">
-              Attendance for {selectedDate.toISOString().slice(0, 10)}
+              Attendance for {selectedDate.toLocaleDateString().slice(0, 10)}
             </div>
             <div className="mx-6 grid grid-cols-[1fr_auto] gap-2">
               <Input
