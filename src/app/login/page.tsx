@@ -17,9 +17,10 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
-
+import { useRouter } from "next/navigation";
 
 export default function Login() {
+  const router = useRouter()
   const formSchema = z.object({
     email: z.string().email({
       message: "Invalid email address.",
@@ -53,9 +54,8 @@ export default function Login() {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     console.log(values);
+    router.push("/")
   }
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">

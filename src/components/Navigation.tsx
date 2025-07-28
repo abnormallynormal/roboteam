@@ -103,14 +103,7 @@ export default function Navbar() {
           </div>
           <NavigationMenuItem className="mr-4">
             <ModeToggle />
-            <NavigationMenuLink
-              asChild
-              className={navigationMenuTriggerStyle()}
-            >
-              <Link href="/login">
-                <Button onClick={() => console.log("clicked")}>Log Out</Button>
-              </Link>
-            </NavigationMenuLink>
+            
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
