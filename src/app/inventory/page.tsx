@@ -104,12 +104,12 @@ export default function Inventory() {
   return (
     <div>
       <Navbar />
-      <div className="px-24 py-8">
+      <div className="px-24 py-20">
         <div className="text-3xl font-bold my-2">Inventory Management</div>
         <div className="mb-8">
           Track parts, components, and equipment for your team.
         </div>
-        <div className="grid grid-cols-[2fr_7fr] gap-6">
+        <div className="grid grid-rows-[auto_1fr] md:grid md:grid-cols-[auto_1fr] gap-4 md:gap-6">
           <Card className="h-fit gap-1">
             <div className="font-semibold mx-4 mb-2 text-xl">
               Select inventory count
@@ -136,13 +136,12 @@ export default function Inventory() {
             ))}
           </Card>
           <Card className="overflow-x-auto">
-            <div className="font-semibold text-xl mx-4 relative">
+            <div className="flex flex-row">
               <div>Inventory</div>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="secondary"
-                    className="absolute top-0 right-0"
                   >
                     <Plus />
                     Add new inventory count

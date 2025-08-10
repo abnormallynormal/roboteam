@@ -1,4 +1,6 @@
 "use client";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
@@ -35,6 +37,7 @@ import {
 import { toast } from "sonner";
 import { boolean, record } from "zod";
 import { AttendanceCalendar } from "@/components/attendancecalendar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Member {
   _id: string;
@@ -45,7 +48,11 @@ interface Member {
   lateDates: string[];
 }
 type AttendanceStatus = "present" | "late" | "absent" | "unmarked";
+
 export default function Attendance() {
+  // ALL HOOKS MUST BE AT THE TOP
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [switchDetector, setSwitchDetector] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -57,6 +64,16 @@ export default function Attendance() {
   const [members, setMembers] = useState<Member[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inspectedMember, setInspectedMember] = useState<Member>();
+  const [needsSorting, setNeedsSorting] = useState(false);
+
+  // ALL useEffect HOOKS BEFORE ANY EARLY RETURNS
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      router.push("/login");
+    }
+  }, [session, status, router]);
+
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch("/api/get-members");
@@ -75,9 +92,6 @@ export default function Attendance() {
         member.absent.forEach((date: string) => {
           tempAbsent.push(date.slice(0, 10));
         });
-        tempPresent.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
-        tempLate.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
-        tempAbsent.sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
         temp.push({
           _id: member._id,
           name: member.name,
@@ -88,10 +102,43 @@ export default function Attendance() {
         });
       });
       setMembers(temp);
+      setNeedsSorting(true);
       console.log(temp);
     };
     fetchData();
   }, [switchDetector]);
+
+  useEffect(() => {
+    if (needsSorting) {
+      setMembers((prevMembers) => {
+        return prevMembers.map((member) => ({
+          ...member,
+          presentDates: [...member.presentDates].sort(
+            (a: string, b: string) =>
+              new Date(a).getTime() - new Date(b).getTime()
+          ),
+          lateDates: [...member.lateDates].sort(
+            (a: string, b: string) =>
+              new Date(a).getTime() - new Date(b).getTime()
+          ),
+          absentDates: [...member.absentDates].sort(
+            (a: string, b: string) =>
+              new Date(a).getTime() - new Date(b).getTime()
+          ),
+        }));
+      });
+      setNeedsSorting(false);
+    }
+  }, [needsSorting]);
+
+  // EARLY RETURNS AFTER ALL HOOKS
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <div>Redirecting...</div>;
+  }
 
   const updateAttendance = async (
     memberId: string,
@@ -127,9 +174,9 @@ export default function Attendance() {
         return member;
       });
     });
+    setNeedsSorting(true);
     try {
       const response = await fetch(`/api/members/${memberId}`, {
-        // Replace with actual member ID
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -149,7 +196,6 @@ export default function Attendance() {
       toast.success(`Attendance marked as ${status}`);
       const result = await response.json();
       console.log("Success:", result);
-      // Handle success (e.g., show a success message, refresh data)
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to update attendance"
@@ -158,6 +204,7 @@ export default function Attendance() {
       setIsLoading(null);
     }
   };
+
   const filteredMembers = members.filter((member) => {
     const matchesSearch = member.name
       .toLowerCase()
@@ -175,7 +222,7 @@ export default function Attendance() {
         <div className="mb-8">
           Track member attendance and participation in team activities.
         </div>
-        <div className="grid grid-cols-[auto_1fr] gap-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-[auto_1fr] gap-4 lg:gap-6">
           <Card className="h-fit">
             <div className="mx-6 mb-0 text-2xl font-bold">Calendar</div>
             <div className="mx-6 mt-0 p-0">Select date to view attendance</div>
@@ -352,42 +399,40 @@ export default function Attendance() {
                 lateDates={inspectedMember?.lateDates}
               />
               <div>
-                <Accordion type="multiple" >
-                  <AccordionItem value="present">
-                    <AccordionTrigger>
-                      Present: {inspectedMember?.presentDates.length}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {inspectedMember?.presentDates.map((date) => {
-                        return <div key={date}>{date}</div>;
-                      })}
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="late">
-                    <AccordionTrigger>
-                      Late: {inspectedMember?.lateDates.length}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {inspectedMember?.lateDates.map((date) => {
-                        return <div key={date}>{date}</div>;
-                      })}
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="absent">
-                    <AccordionTrigger>
-                      Absent: {inspectedMember?.absentDates.length}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      {inspectedMember?.absentDates.map((date) => {
-                        return (
-                          <div key={date}>
-                            {date}
-                          </div>
-                        )
-                      })}
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                <ScrollArea className="w-full h-[300px]">
+                  <Accordion type="multiple" className="pr-4">
+                    <AccordionItem value="present">
+                      <AccordionTrigger>
+                        Present: {inspectedMember?.presentDates.length}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {inspectedMember?.presentDates.map((date) => {
+                          return <div key={date}>{date}</div>;
+                        })}
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="late">
+                      <AccordionTrigger>
+                        Late: {inspectedMember?.lateDates.length}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {inspectedMember?.lateDates.map((date) => {
+                          return <div key={date}>{date}</div>;
+                        })}
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="absent">
+                      <AccordionTrigger>
+                        Absent: {inspectedMember?.absentDates.length}
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        {inspectedMember?.absentDates.map((date) => {
+                          return <div key={date}>{date}</div>;
+                        })}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </ScrollArea>
               </div>
             </div>
           </DialogHeader>

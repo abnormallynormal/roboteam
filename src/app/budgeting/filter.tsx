@@ -82,7 +82,7 @@ export default function FilterPopup({
   }, [startDate, endDate]);
 
   return (
-    <div className="grid grid-cols-[1fr_auto_auto] gap-4">
+    <div className="grid md:grid-cols-[1fr_auto_auto] gap-4">
       <div>
         <Input
           placeholder="Search transactions by description"
@@ -97,7 +97,7 @@ export default function FilterPopup({
             <Button
               variant="outline"
               id="date"
-              className="w-48 justify-between font-normal"
+              className="justify-between font-normal w-auto"
             >
               {startDate ? startDate.toLocaleDateString() : "Start date"}
               <ChevronDownIcon />
@@ -121,7 +121,7 @@ export default function FilterPopup({
             <Button
               variant="outline"
               id="date"
-              className="w-48 justify-between font-normal"
+              className="w-auto justify-between font-normal"
             >
               {endDate ? endDate.toLocaleDateString() : "End date"}
               <ChevronDownIcon />

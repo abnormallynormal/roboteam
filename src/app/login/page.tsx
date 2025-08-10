@@ -17,10 +17,11 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function Login() {
-  const router = useRouter()
+  const router = useRouter();
   const formSchema = z.object({
     email: z.string().email({
       message: "Invalid email address.",
@@ -55,10 +56,10 @@ export default function Login() {
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    router.push("/")
+    router.push("/");
   }
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center my-24 min-h-screen">
       <div>
         <div className="mb-12">
           <Button variant="ghost">
@@ -81,131 +82,21 @@ export default function Login() {
               <div className="justify-self-center text-[14px] mb-4">
                 Access your robotics team dashboard
               </div>
-              <Tabs
-                defaultValue="signin"
-                className="w-100 flex justify-self-center"
-              >
-                <TabsList className="mb-2 flex justify-self-center w-full">
-                  <TabsTrigger value="signin">Sign in</TabsTrigger>
-                  <TabsTrigger value="signup">Sign up</TabsTrigger>
-                </TabsList>
-                <TabsContent value="signin" className="m-0">
-                  <Form {...formSignin}>
-                    <form
-                      onSubmit={formSignin.handleSubmit(onSubmit)}
-                      className="space-y-8"
-                    >
-                      <FormField
-                        control={formSignin.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem className="my-2">
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="team@robotics.com"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={formSignin.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem className="my-6">
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input placeholder="••••••••" type="password" required {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit" className="w-full">
-                        Submit
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-                <TabsContent value="signup">
-                  <Form {...formSignup}>
-                    <form
-                      onSubmit={formSignup.handleSubmit(onSubmit)}
-                      className="space-y-8"
-                    >
-                      <div className="m-0 grid grid-cols-2 gap-4">
-                        <FormField
-                          control={formSignup.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem className="my-2">
-                              <FormLabel>First Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="John"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={formSignup.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem className="my-2">
-                              <FormLabel>Last Name</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Smith"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <FormField
-                        control={formSignup.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem className="my-4">
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="team@robotics.com"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={formSignup.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem className="my-6">
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input placeholder="••••••••" type="password" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button type="submit" className="w-full">
-                        Submit
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-              </Tabs>
+              <div className="mx-8">
+                <Button
+                  variant="default"
+                  className="w-full"
+                  onClick={() => signIn("google", {callbackUrl: "/"})}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path
+                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Login with Google
+                </Button>
+              </div>
             </div>
           </Card>
         </div>
