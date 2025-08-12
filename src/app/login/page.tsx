@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { SignIn } from "../../lib/auth-action";
 
 export default function Login() {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function Login() {
                 <Button
                   variant="default"
                   className="w-full"
-                  onClick={() => signIn("google", {callbackUrl: "/"})}
+                  onClick={()=>{SignIn()}}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path

@@ -21,7 +21,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { SignOut } from "../lib/auth-action";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -128,8 +128,8 @@ export default function Navbar() {
                   </NavigationMenuList>
                 </NavigationMenu>
                 <Button
-                  onClick={async () => {
-                    await signOut();
+                  onClick={ () => {
+                   SignOut()
                   }}
                 >
                   Log Out
