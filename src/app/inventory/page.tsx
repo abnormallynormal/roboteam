@@ -136,12 +136,13 @@ export default function Inventory() {
             ))}
           </Card>
           <Card className="overflow-x-auto">
-            <div className="flex flex-row">
+            <div className="font-semibold text-xl mx-4 relative">
               <div>Inventory</div>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="secondary"
+                    className="absolute top-0 right-0"
                   >
                     <Plus />
                     Add new inventory count

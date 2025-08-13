@@ -65,6 +65,7 @@ export default function Budgeting() {
               () => setOpen(true)
             )}
             data={transactions}
+           
           />
         </div>
         <Dialog

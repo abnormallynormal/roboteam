@@ -32,11 +32,13 @@ import FilterPopup from "./filter";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onItemAdded?: (item: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onItemAdded,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     {
@@ -54,12 +56,12 @@ export function DataTable<TData, TValue>({
     type: any;
     checked: boolean;
   }) => {
-    if(checked){
+    if (checked) {
       setType(type);
     } else {
       setType(null);
     }
-    console.log({type});
+    console.log({ type });
   };
   const handleCheckboxChange = ({
     category,
@@ -87,10 +89,9 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     state: {
-      
       columnFilters,
-      sorting
-    }
+      sorting,
+    },
   });
 
   return (
@@ -106,15 +107,22 @@ export function DataTable<TData, TValue>({
           onCheckboxChangeAction={handleCheckboxChange}
         />
       </div>
-      <div className="rounded-md border">
-        <Table className="table-auto">
+      <div className="rounded-md border overflow-x-scroll">
+        <Table className="table-auto relative">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   if (header.column.id === "id") return null;
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={
+                        header.column.id === "actions"
+                          ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-8"
+                          : ""
+                      }
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -141,7 +149,7 @@ export function DataTable<TData, TValue>({
                         key={cell.id}
                         className={
                           cell.column.id === "actions"
-                            ? "text-right py-2"
+                            ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-8"
                             : "text-left py-2"
                         }
                       >

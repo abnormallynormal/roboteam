@@ -1,6 +1,6 @@
 import { auth } from "../auth";
 
-export default auth((req) => {
+export default auth((req:any) => {
   const { nextUrl, auth: session } = req;
   const isLoggedIn = !!session;
 

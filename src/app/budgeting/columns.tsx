@@ -42,7 +42,9 @@ export type Transaction = {
   category: (typeof category)[number]["value"];
   date: string;
 };
-export const columns = (
+/*************  ✨ Windsurf Command ⭐  *************/
+  /**
+/*******  269d71c0-9559-43f2-a981-e94f48d6a711  *******/export const columns = (
   collection: string,
   team: string,
   onItemAdded: () => void,
@@ -150,12 +152,14 @@ export const columns = (
     accessorKey: "actions",
     header: () => {
       return (
-        <div className="grid grid-cols-[auto_auto] justify-self-end items-center gap-3">
+        <div className="">
           <Popover>
             <PopoverTrigger asChild>
               <Button>
-                <Plus />
-                Add item
+                <div className="flex flex-row items-center gap-2">
+                  <Plus />
+                  <div className="hidden md:block">Add item</div>
+                </div>
               </Button>
             </PopoverTrigger>
             <PopoverContent avoidCollisions={true}>

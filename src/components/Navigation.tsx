@@ -31,7 +31,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex flex-row w-full justify-between">
-            <div className=" flex w-full gap-2 md:hidden">
+            <div className=" flex w-full gap-2 lg:hidden">
               <Button
                 variant="ghost"
                 size="icon"
@@ -44,10 +44,10 @@ export default function Navbar() {
                 <ModeToggle />
               </div>
             </div>
-            <div className="text-xl font-bold self-center hidden md:block">
+            <div className="text-xl font-bold self-center hidden lg:block">
               RoboTeam
             </div>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <div className="flex ml-10 items-baseline space-x-2">
                 <NavigationMenu viewport={false}>
                   <NavigationMenuList className="flex flex-row">

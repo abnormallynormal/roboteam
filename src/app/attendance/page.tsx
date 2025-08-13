@@ -1,11 +1,10 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import Navbar from "@/components/Navigation";
-import { Filter } from "lucide-react";
+import { Ban, CalendarIcon, Check, ChevronDownIcon, Clock, Filter, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
@@ -35,10 +34,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { boolean, record } from "zod";
 import { AttendanceCalendar } from "@/components/attendancecalendar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 interface Member {
   _id: string;
   name: string;
@@ -51,7 +53,6 @@ type AttendanceStatus = "present" | "late" | "absent" | "unmarked";
 
 export default function Attendance() {
   // ALL HOOKS MUST BE AT THE TOP
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [switchDetector, setSwitchDetector] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -65,14 +66,7 @@ export default function Attendance() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inspectedMember, setInspectedMember] = useState<Member>();
   const [needsSorting, setNeedsSorting] = useState(false);
-
-  // ALL useEffect HOOKS BEFORE ANY EARLY RETURNS
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session) {
-      router.push("/login");
-    }
-  }, [session, status, router]);
+  const [lgCalendarOpen, setLgCalendarOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,15 +124,6 @@ export default function Attendance() {
       setNeedsSorting(false);
     }
   }, [needsSorting]);
-
-  // EARLY RETURNS AFTER ALL HOOKS
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return <div>Redirecting...</div>;
-  }
 
   const updateAttendance = async (
     memberId: string,
@@ -217,13 +202,15 @@ export default function Attendance() {
   return (
     <div>
       <Navbar />
-      <div className="px-24 py-4">
-        <div className="text-3xl font-bold my-2">Team Attendance</div>
-        <div className="mb-8">
+      <div className="mx-6 md:mx-24 py-16">
+        <div className="text-2xl md:text-3xl font-bold my-2">
+          Team Attendance
+        </div>
+        <div className="mb-8 text-sm md:text-base">
           Track member attendance and participation in team activities.
         </div>
         <div className="flex flex-col lg:grid lg:grid-cols-[auto_1fr] gap-4 lg:gap-6">
-          <Card className="h-fit">
+          <Card className="h-fit hidden lg:block">
             <div className="mx-6 mb-0 text-2xl font-bold">Calendar</div>
             <div className="mx-6 mt-0 p-0">Select date to view attendance</div>
             <div className="justify-items-center px-8">
@@ -237,20 +224,49 @@ export default function Attendance() {
                     console.log(selectedDate);
                   }
                 }}
-                className="rounded-lg border [--cell-size:--spacing(9)]"
+                className="rounded-lg border [--cell-size:--spacing(9)] mt-4"
                 buttonVariant="ghost"
               />
             </div>
           </Card>
-          <Card className="h-fit">
-            <div className="mx-6 mb-0 text-2xl font-bold">
+          <div className="flex flex-row lg:hidden items-center gap-4">
+            <div className="text-base font-semibold">Select date to view attendance:</div>
+            <Popover open={lgCalendarOpen} onOpenChange={setLgCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id="date"
+                  className="w-fit justify-between font-normal"
+                >
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString()
+                    : "Select date"}
+                  <ChevronDownIcon />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  required={true}
+                  selected={selectedDate}
+                  onSelect={(date) => {
+                    setSelectedDate(date);
+                    setLgCalendarOpen(false);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <Card className="h-fit gap-0">
+            <div className="mx-4 mb-6 text-xl md:text-2xl font-bold">
               Attendance for {selectedDate.toLocaleDateString().slice(0, 10)}
             </div>
-            <div className="mx-6 grid grid-cols-[1fr_auto] gap-2">
+            <div className="mx-4 grid grid-cols-[1fr_auto] gap-2">
               <Input
                 placeholder="Search for team members"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="text-sm"
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -291,11 +307,11 @@ export default function Attendance() {
             </div>
             <div className="space-y-2">
               {filteredMembers.length === 0 ? (
-                <div className="text-center">No members found</div>
+                <div className="text-center mt-6">No members found</div>
               ) : (
                 filteredMembers.map((member) => (
-                  <Card key={member._id} className="mx-6 my-2 p-4">
-                    <div className="grid grid-cols-[1fr_auto] gap-4 items-center">
+                  <Card key={member._id} className="mx-4 mt-4 p-4">
+                    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
                       <div className="grid grid-rows-2">
                         <Button
                           className="justify-start gap-0 p-0 h-fit"
@@ -305,13 +321,13 @@ export default function Attendance() {
                             setInspectedMember(member);
                           }}
                         >
-                          <div className="text-lg font-semibold">
+                          <div className="text-base font-semibold">
                             {member.name}
                           </div>
                         </Button>
                         <div className="text-sm">{member.team}</div>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 items-center">
+                      <div className="hidden sm:block grid-cols-3 gap-2 items-center">
                         {member.presentDates.includes(
                           selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
@@ -377,6 +393,78 @@ export default function Attendance() {
                           </Button>
                         )}
                       </div>
+                      <div className="sm:hidden grid-cols-3 gap-2 items-center">
+                        {member.presentDates.includes(
+                          selectedDate.toLocaleDateString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <Check />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                            onClick={() =>
+                              updateAttendance(member._id, "present")
+                            }
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <Check />
+                          </Button>
+                        )}
+                        {member.lateDates.includes(
+                          selectedDate.toLocaleDateString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <Clock />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                            onClick={() => updateAttendance(member._id, "late")}
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <Clock />
+                          </Button>
+                        )}
+                        {member.absentDates.includes(
+                          selectedDate.toLocaleDateString().slice(0, 10)
+                        ) ? (
+                          <Button
+                            variant="outline"
+                            className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <X />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                            onClick={() =>
+                              updateAttendance(member._id, "absent")
+                            }
+                            disabled={isLoading === member._id}
+                            size="icon"
+                          >
+                            <X />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </Card>
                 ))
@@ -390,7 +478,7 @@ export default function Attendance() {
           <DialogHeader>
             <DialogTitle>{inspectedMember?.name}</DialogTitle>
             <DialogDescription>{inspectedMember?.team}</DialogDescription>
-            <div className="grid grid-cols-[auto_1fr] gap-4">
+            <div className="sm:grid grid-cols-[auto_1fr] gap-4">
               <AttendanceCalendar
                 mode="single"
                 selected={selectedDate}

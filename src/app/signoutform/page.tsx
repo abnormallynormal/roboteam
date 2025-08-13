@@ -125,7 +125,6 @@ export default function SignOutForm() {
   }, [switchDetector]);
   const itemSchema = z
     .object({
-      type: z.string().min(1, { message: "Please select an item type" }),
       name: z.string().min(1, { message: "Please select an item" }),
       quantity: z
         .number({ invalid_type_error: "Quantity is required" })
@@ -167,7 +166,10 @@ export default function SignOutForm() {
       if (foundItem && data.returnQuantity > foundItem.label.remainingQ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: foundItem.label.remainingQ === 1 ? `There is only 1 item left to return.` : `There are only ${foundItem.label.remainingQ} items left to return.`,
+          message:
+            foundItem.label.remainingQ === 1
+              ? `There is only 1 item left to return.`
+              : `There are only ${foundItem.label.remainingQ} items left to return.`,
           path: ["returnQuantity"],
         });
       }
@@ -198,7 +200,7 @@ export default function SignOutForm() {
     defaultValues: {
       email: "",
       team: "",
-      items: [{ type: "", name: "", quantity: NaN }],
+      items: [{ name: "", quantity: NaN }],
     },
   });
   const formSignin = useForm<z.infer<typeof signInFormSchema>>({
@@ -252,7 +254,7 @@ export default function SignOutForm() {
         });
         formSignout.reset({
           email: "",
-          items: [{ type: "", name: "", quantity: NaN }],
+          items: [{ name: "", quantity: NaN }],
         });
         setSwitchDetector((prev) => !prev);
       } catch (err) {
@@ -296,17 +298,11 @@ export default function SignOutForm() {
   return (
     <div className="flex flex-col min-h-screen">
       <div>
-        {/* <div className="mb-4">
-          <Button variant="ghost">
-            <ChevronLeftIcon />
-            Back to Home
-          </Button>
-        </div> */}
-        <div className="justify-self-center mt-12 text-3xl font-bold">
+        <div className="justify-self-center mt-12 text-3xl font-bold text-center mx-6 md:mx-24">
           STL Robotics Sign Out Form
         </div>
         <div>
-          <Card className="relative w-3/4 justify-self-center py-4 px-8 m-24 mt-12">
+          <Card className="relative w-6/7 justify-self-center py-4 px-4 mx-12 mt-12">
             <Tabs
               defaultValue="signout"
               className="w-auto flex justify-self-center"
@@ -321,7 +317,7 @@ export default function SignOutForm() {
                     onSubmit={formSignout.handleSubmit(signOut)}
                     className="space-y-6"
                   >
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
                       <FormField
                         control={formSignout.control}
                         name="email"
@@ -332,6 +328,7 @@ export default function SignOutForm() {
                               <Input
                                 placeholder="team@robotics.com"
                                 {...field}
+                                className="text-sm"
                               />
                             </FormControl>
                             <FormMessage />
@@ -369,7 +366,7 @@ export default function SignOutForm() {
                                   <Command>
                                     <CommandInput
                                       placeholder="Search for a team..."
-                                      className="h-9"
+                                      className="h-9 text-sm"
                                     />
                                     <CommandList>
                                       <CommandEmpty>
@@ -434,23 +431,7 @@ export default function SignOutForm() {
                             </div>
                           )}
 
-                          <div className="grid grid-cols-[2fr_2fr_1fr] gap-4">
-                            <FormField
-                              control={formSignout.control}
-                              name={`items.${index}.type`}
-                              render={({ field }) => (
-                                <FormItem className="my-2">
-                                  <FormLabel>Type</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="Game Element"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
+                          <div className="grid grid-cols-[3fr_2fr] gap-4">
                             <FormField
                               control={formSignout.control}
                               name={`items.${index}.name`}
@@ -461,6 +442,7 @@ export default function SignOutForm() {
                                     <Input
                                       placeholder="Red Blocks"
                                       {...field}
+                                      className="text-sm"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -491,6 +473,7 @@ export default function SignOutForm() {
                                             : Number(e.target.value)
                                         )
                                       }
+                                      className="text-sm"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -507,7 +490,7 @@ export default function SignOutForm() {
                         variant="secondary"
                         className="w-full"
                         onClick={() =>
-                          appendSignOut({ type: "", name: "", quantity: NaN })
+                          appendSignOut({ name: "", quantity: NaN })
                         }
                       >
                         Add Item
@@ -523,7 +506,7 @@ export default function SignOutForm() {
                 <Form {...formSignin}>
                   <form
                     onSubmit={formSignin.handleSubmit(signIn)}
-                    className="space-y-4"
+                    className="space-y-6"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
@@ -536,6 +519,7 @@ export default function SignOutForm() {
                               <Input
                                 placeholder="team@robotics.com"
                                 {...field}
+                                className="text-sm"
                               />
                             </FormControl>
                             <FormMessage />
@@ -573,7 +557,7 @@ export default function SignOutForm() {
                                   <Command>
                                     <CommandInput
                                       placeholder="Search for a team..."
-                                      className="h-9"
+                                      className="h-9 text-sm"
                                     />
                                     <CommandList>
                                       <CommandEmpty>
@@ -634,13 +618,13 @@ export default function SignOutForm() {
                               Item {index + 1}
                             </div>
                           )}
-                          <div className="grid grid-cols-[2fr_1fr] gap-4">
+                          <div className="grid sm:grid-cols-[3fr_2fr] sm:gap-4">
                             <FormField
                               control={formSignin.control}
                               name={`items.${index}.item`}
                               render={({ field }) => (
                                 <FormItem className="my-2">
-                                  <FormLabel>Name</FormLabel>
+                                  <FormLabel>Item Name</FormLabel>
                                   <FormControl>
                                     <Popover>
                                       <PopoverTrigger asChild>
@@ -659,7 +643,7 @@ export default function SignOutForm() {
                                                   (data) =>
                                                     data.value === field.value
                                                 )?.display
-                                              : "Select item"}
+                                              : "Select item to return"}
                                             <ChevronsUpDown className="opacity-50" />
                                           </Button>
                                         </FormControl>
@@ -668,7 +652,7 @@ export default function SignOutForm() {
                                         <Command>
                                           <CommandInput
                                             placeholder="Search for a borrowed item..."
-                                            className="h-9"
+                                            className="h-9 text-sm"
                                           />
                                           <CommandList>
                                             <CommandEmpty>
@@ -731,6 +715,7 @@ export default function SignOutForm() {
                                             : Number(e.target.value)
                                         )
                                       }
+                                      className="text-sm"
                                     />
                                   </FormControl>
                                   <FormMessage />

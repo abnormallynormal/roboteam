@@ -16,5 +16,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       // Logged in users are authenticated, otherwise redirect to login page
       return !!auth;
     },
+    
   },
 });
