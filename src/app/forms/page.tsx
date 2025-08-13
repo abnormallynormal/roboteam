@@ -11,6 +11,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { columns, Payment } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
@@ -41,6 +48,7 @@ export default function Forms() {
   const [switchDetector, setSwitchDetector] = useState(false);
   const [display, setDisplay] = useState<any>(null);
   const [dialog, setDialog] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       const result = await fetch(`/api/forms`);
@@ -60,44 +68,92 @@ export default function Forms() {
     };
     fetchData();
   }, [switchDetector]);
+
   return (
     <div>
       <Navbar />
-      <div className="px-24 py-8">
-        <div className="text-3xl font-bold my-2">Form Management</div>
-        <div className="mb-8">
+      <div className="mx-6 md:mx-24 py-16">
+        <div className="text-2xl md:text-3xl font-bold my-2">
+          Form Management
+        </div>
+        <div className="mb-8 text-sm md:text-base">
           Track and collect forms and payments from members.
         </div>
-        <div className="grid grid-cols-[2fr_7fr] gap-6">
-          <Card className="h-fit gap-1">
-            <div className="font-semibold mx-4 mb-2 text-xl">Select form</div>
-            {documents.map((document) => (
-              <div className="flex items-center mx-4" key={document._id}>
-                <File />
-                <Button
-                  value={document.name}
-                  className="justify-self-start"
-                  variant="link"
-                  onClick={() => {
-                    setDisplay(document);
-                    setSwitchDetector(!switchDetector);
-                    console.log(document);
-                  }}
-                >
-                  {document.name}
+        <div className="grid grid-rows-[auto_1fr] lg:grid lg:grid-cols-[2fr_7fr] gap-4 md:gap-6">
+          {/* Mobile Layout */}
+          <div className="grid grid-cols-[1fr_auto] gap-4 sm:hidden">
+            <Select
+              value={display?._id || ""}
+              onValueChange={(value) => {
+                const selectedDocument = documents.find(
+                  (doc) => doc._id === value
+                );
+                if (selectedDocument) {
+                  setDisplay(selectedDocument);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select form" />
+              </SelectTrigger>
+              <SelectContent>
+                {documents.map((document) => (
+                  <SelectItem key={document._id} value={document._id}>
+                    {document.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Dialog open={dialog} onOpenChange={setDialog}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Plus />
                 </Button>
+              </DialogTrigger>
+              <DialogContent className="w-full">
+                <DialogTitle className="mb-4">Add new form tracker</DialogTitle>
+                <AddForm
+                  handleSubmit={() => {
+                    setSwitchDetector(!switchDetector);
+                    setDialog(false);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Desktop Sidebar */}
+          <Card className="h-fit gap-1 hidden sm:block">
+            <div className="font-semibold mx-4 mb-2 text-lg md:text-xl">
+              Select form
+            </div>
+            {documents.map((document) => (
+              <div className="mx-4 mb-2" key={document._id}>
+                <div className="flex gap-3">
+                  <File className=" mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0 flex items-center">
+                    <Button
+                      value={document.name}
+                      className="text-left whitespace-normal h-auto p-0 w-full justify-start content-center"
+                      variant="link"
+                      onClick={() => {
+                        setDisplay(document);
+                      }}
+                    >
+                      <div className="break-all">{document.name}</div>
+                    </Button>
+                  </div>
+                </div>
               </div>
             ))}
           </Card>
+          {/* Main Content */}
           <Card className="overflow-x-auto">
-            <div className="font-semibold text-xl mx-4 relative">
-              <div>Responses</div>
+            <div className="font-semibold text-lg md:text-xl mx-4 flex flex-row items-start justify-between">
+              <div>{`Responses for ${display?.name || "..."}`}</div>
               <Dialog open={dialog} onOpenChange={setDialog}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    className=" absolute top-0 right-0"
-                  >
+                <DialogTrigger asChild className="hidden sm:flex">
+                  <Button variant="secondary">
                     <Plus />
                     Add new form tracker
                   </Button>
@@ -106,10 +162,12 @@ export default function Forms() {
                   <DialogTitle className="mb-4">
                     Add new form tracker
                   </DialogTitle>
-                  <AddForm handleSubmit={() => {
-                    setSwitchDetector(!switchDetector)
-                    setDialog(false)
-                  }} />
+                  <AddForm
+                    handleSubmit={() => {
+                      setSwitchDetector(!switchDetector);
+                      setDialog(false);
+                    }}
+                  />
                 </DialogContent>
               </Dialog>
             </div>

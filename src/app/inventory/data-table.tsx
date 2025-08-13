@@ -130,6 +130,7 @@ export function DataTable<TData extends Item, TValue>({
               onChange={(e) => {
                 onFilterChange("name", e.target.value);
               }}
+              className="text-sm"
             ></Input>
           </div>
           <Popover>
@@ -236,7 +237,14 @@ export function DataTable<TData extends Item, TValue>({
                 {headerGroup.headers.map((header) => {
                   if (header.column.id === "id") return null;
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className={
+                        header.column.id === "actions"
+                          ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-12"
+                          : ""
+                      }
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -263,7 +271,7 @@ export function DataTable<TData extends Item, TValue>({
                         key={cell.id}
                         className={
                           cell.column.id === "actions"
-                            ? "text-right py-2"
+                            ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-12"
                             : "text-left py-0"
                         }
                         onDoubleClick={() => {
