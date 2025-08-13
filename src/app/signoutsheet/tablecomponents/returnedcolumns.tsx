@@ -4,13 +4,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 export type ReturnedItem = {
   value: string;
   returnerName: string;
@@ -25,22 +22,6 @@ export const returnedColumns: ColumnDef<ReturnedItem>[] = [
   {
     accessorKey: "returnerName",
     header: "Name",
-  },
-  {
-    accessorKey: "returnerTeam",
-    header: "Team",
-  },
-  {
-    accessorKey: "returnedItem",
-    header: "Returned Item",
-  },
-  {
-    accessorKey: "quantity",
-    header: "Borrowed Quantity",
-  },
-  {
-    accessorKey: "returned",
-    header: "Items Returned",
   },
   {
     accessorKey: "returnedDate",
@@ -58,6 +39,23 @@ export const returnedColumns: ColumnDef<ReturnedItem>[] = [
     sortingFn: "datetime",
     sortDescFirst: true,
   },
+  {
+    accessorKey: "returnerTeam",
+    header: "Team",
+  },
+  {
+    accessorKey: "returnedItem",
+    header: "Returned Item",
+  },
+  {
+    accessorKey: "quantity",
+    header: "Borrowed Quantity",
+  },
+  {
+    accessorKey: "returned",
+    header: "Items Returned",
+  },
+
   // {
   //   accessorKey: "button",
   //   header: "",

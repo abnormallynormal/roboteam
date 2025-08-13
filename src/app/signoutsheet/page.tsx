@@ -69,18 +69,21 @@ export default function SignInOutTracking() {
   return (
     <div>
       <Navbar />
-      <div className="px-16 py-4">
-        <div className="text-3xl font-bold my-2">Sign Out Sheet</div>
-        <div className="mb-8">Track borrowed game elements and tools</div>
+      <div className="mx-6 md:mx-24 py-16">
+        <div className="text-2xl md:text-3xl font-bold my-2">Sign Out Sheet</div>
+        <div className="mb-8 text-sm md:text-base">Track borrowed game elements and tools</div>
         <Tabs defaultValue="borrowed">
           <TabsList className="w-full h-10 mb-4">
             <TabsTrigger value="borrowed">Borrowed Items</TabsTrigger>
             <TabsTrigger value="returned">Returned Items</TabsTrigger>
           </TabsList>
           <TabsContent value="borrowed">
-            <BorrowedTable columns={borrowedColumns(() => {
-              setSwitchDetector(!switchDetector);
-            })} data={toBeReturned} />
+            <BorrowedTable
+              columns={borrowedColumns(() => {
+                setSwitchDetector(!switchDetector);
+              })}
+              data={toBeReturned}
+            />
           </TabsContent>
           <TabsContent value="returned">
             <ReturnedTable columns={returnedColumns} data={returned} />

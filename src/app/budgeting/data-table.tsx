@@ -107,7 +107,7 @@ export function DataTable<TData, TValue>({
           onCheckboxChangeAction={handleCheckboxChange}
         />
       </div>
-      <div className="rounded-md border overflow-x-scroll">
+      <div className="rounded-md border overflow-x-auto">
         <Table className="table-auto relative">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -119,7 +119,7 @@ export function DataTable<TData, TValue>({
                       key={header.id}
                       className={
                         header.column.id === "actions"
-                          ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-8"
+                          ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-12"
                           : ""
                       }
                     >
@@ -149,7 +149,7 @@ export function DataTable<TData, TValue>({
                         key={cell.id}
                         className={
                           cell.column.id === "actions"
-                            ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-8"
+                            ? "text-right py-2 sticky right-0 bg-gradient-to-l from-background from-70% to-transparent shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.1)] z-10 pl-12"
                             : "text-left py-2"
                         }
                       >
