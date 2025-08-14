@@ -310,14 +310,22 @@ export default function SignOutForm() {
         <div className="justify-self-center mt-12 text-3xl font-bold text-center mx-6 md:mx-24">
           STL Robotics Sign Out Form
         </div>
+        <div className="flex justify-self-center items-center my-4">
+          <div className="justify-self-center mb-2">
+            Currently signed in as {session?.user?.email}.
+          </div>
+          <Button
+            onClick={() => {
+              SignOut();
+            }}
+            variant="link"
+            className="text-red-600 mb-2"
+          >
+            Log out
+          </Button>
+        </div>
         <div>
-          <Card className="relative w-6/7 justify-self-center py-4 px-4 mx-12 mt-12">
-            <div className="mb-2">Currently signed in as {session?.user?.email}.</div>
-            <Button onClick={() => {
-              SignOut()
-            }} variant="link" className="text-red-600 mb-2">
-              Log out
-            </Button>
+          <Card className="relative w-6/7 justify-self-center py-4 px-4 mx-12">
             <Tabs
               defaultValue="signout"
               className="w-auto flex justify-self-center"
