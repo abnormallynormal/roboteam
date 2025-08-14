@@ -31,11 +31,6 @@ export default auth(async (req: any) => {
       const userData = await response.json();
       const userRole = userData.role || 'public';
       
-      // If user role is not recognized, redirect to unauthorized page
-      if (!['user', 'exec', 'admin'].includes(userRole)) {
-        const unauthorizedUrl = new URL("/unauthorized", nextUrl.origin);
-        return Response.redirect(unauthorizedUrl);
-      }
 
       const routeAccessData = {
         "user": ['/login', "/signoutform", "/"],
