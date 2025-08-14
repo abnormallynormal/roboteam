@@ -82,28 +82,34 @@ export default function Forms() {
         <div className="grid grid-rows-[auto_1fr] lg:grid lg:grid-cols-[2fr_7fr] gap-4 md:gap-6">
           {/* Mobile Layout */}
           <div className="grid grid-cols-[1fr_auto] gap-4 sm:hidden">
-            <Select
-              value={display?._id || ""}
-              onValueChange={(value) => {
-                const selectedDocument = documents.find(
-                  (doc) => doc._id === value
-                );
-                if (selectedDocument) {
-                  setDisplay(selectedDocument);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select form" />
-              </SelectTrigger>
-              <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                {documents.map((document) => (
-                  <SelectItem key={document._id} value={document._id}>
-                    {document.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="min-w-0 flex-1">
+              <Select
+                value={display?._id || ""}
+                onValueChange={(value) => {
+                  const selectedDocument = documents.find(
+                    (doc) => doc._id === value
+                  );
+                  if (selectedDocument) {
+                    setDisplay(selectedDocument);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full min-w-0">
+                  <div className="truncate min-w-0 flex-1 text-left">
+                    {display?.name || "Select form"}
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="w-[var(--radix-select-trigger-width)]">
+                  {documents.map((document) => (
+                    <SelectItem key={document._id} value={document._id}>
+                      <div className="truncate max-w-[250px]">
+                        {document.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Dialog open={dialog} onOpenChange={setDialog}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="icon">

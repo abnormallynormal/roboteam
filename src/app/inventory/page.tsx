@@ -121,31 +121,37 @@ export default function Inventory() {
         </div>
         <div className="grid grid-rows-[auto_1fr] lg:grid lg:grid-cols-[2fr_7fr] gap-4 md:gap-6">
           <div className="grid grid-cols-[1fr_auto] gap-4 sm:hidden">
-            <Select
-              value={display?.collectionName || ""}
-              onValueChange={(value) => {
-                const selectedCollection = collections.find(
-                  (c) => c.collectionName === value
-                );
-                if (selectedCollection) {
-                  setDisplay(selectedCollection);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select inventory count" />
-              </SelectTrigger>
-              <SelectContent>
-                {collections.map((collection) => (
-                  <SelectItem
-                    key={collection.collectionName}
-                    value={collection.collectionName}
-                  >
-                    {collection.collectionName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="min-w-0 flex-1">
+              <Select
+                value={display?.collectionName || ""}
+                onValueChange={(value) => {
+                  const selectedCollection = collections.find(
+                    (c) => c.collectionName === value
+                  );
+                  if (selectedCollection) {
+                    setDisplay(selectedCollection);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <div className="truncate">
+                    {display?.collectionName || "Select inventory count"}
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.map((collection) => (
+                    <SelectItem
+                      key={collection.collectionName}
+                      value={collection.collectionName}
+                    >
+                      <div className="truncate ">
+                        {collection.collectionName}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -231,7 +237,7 @@ export default function Inventory() {
               </div>
             ))}
           </Card>
-          <Card className="overflow-x-auto">
+          <Card className="overflow-x-auto gap-4">
             <div className="font-semibold text-lg md:text-xl mx-4 flex flex-row items-start justify-between">
               <div>{display?.collectionName || ""}</div>
               <Popover>
