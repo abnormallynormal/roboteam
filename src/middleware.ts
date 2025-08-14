@@ -5,8 +5,7 @@ export default auth(async (req: any) => {
   const { nextUrl, auth: session } = req;
   const isLoggedIn = !!session;
   const userEmail = session?.user?.email;
-  console.log(userEmail)
-  // Update the public routes to include both pages
+
   const publicRoutes = ["/login", "/access-denied", "/unauthorized", "/easteregg"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
@@ -32,7 +31,6 @@ export default auth(async (req: any) => {
       const userData = await response.json();
       const userRole = userData.role || 'public';
       
-
       const routeAccessData = {
         "user": ['/login', "/signoutform", "/"],
         "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/", "/signoutform"],
@@ -44,6 +42,14 @@ export default auth(async (req: any) => {
         const accessDeniedUrl = new URL("/access-denied", nextUrl.origin);
         return Response.redirect(accessDeniedUrl);
       }
+
+      // Special handling for login page redirect based on user role
+      if (nextUrl.pathname === "/login") {
+        const redirectUrl = userRole === "user" 
+          ? new URL("/signoutform", nextUrl.origin)
+          : new URL("/", nextUrl.origin);
+        return Response.redirect(redirectUrl);
+      }
     } catch (error) {
       console.error('RBAC check failed:', error);
       const accessDeniedUrl = new URL("/access-denied", nextUrl.origin);
@@ -51,11 +57,7 @@ export default auth(async (req: any) => {
     }
   }
 
-  // Login page redirect after RBAC check
-  if (isLoggedIn && nextUrl.pathname === "/login") {
-    const homeUrl = new URL("/", nextUrl.origin);
-    return Response.redirect(homeUrl);
-  }
+  // Remove the original login redirect since it's now handled in the RBAC check
 });
 
 export const config = {

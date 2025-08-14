@@ -34,7 +34,8 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon } from "lucide-react";
-
+import { useSession } from "next-auth/react";
+import { SignOut } from "@/lib/auth-action";
 const remaining = [
   { type: "Blocks", max: 3 },
   { type: "Loaders", max: 2 },
@@ -51,6 +52,7 @@ const maxValues = [
   },
 ];
 export default function SignOutForm() {
+  const { data: session } = useSession();
   const [dataset, setDataset] = useState([
     {
       value: "",
@@ -232,6 +234,13 @@ export default function SignOutForm() {
     control: formSignin.control,
   });
 
+  useEffect(() => {
+    if (session?.user?.email) {
+      formSignout.setValue("email", session.user.email);
+      formSignin.setValue("email", session.user.email);
+    }
+  }, [session]);
+
   async function signOut(values: z.infer<typeof signOutFormSchema>) {
     var email = values.email;
     var team = values.team;
@@ -303,6 +312,12 @@ export default function SignOutForm() {
         </div>
         <div>
           <Card className="relative w-6/7 justify-self-center py-4 px-4 mx-12 mt-12">
+            <div className="mb-2">Currently signed in as {session?.user?.email}.</div>
+            <Button onClick={() => {
+              SignOut()
+            }} variant="link" className="text-red-600 mb-2">
+              Log out
+            </Button>
             <Tabs
               defaultValue="signout"
               className="w-auto flex justify-self-center"
@@ -329,6 +344,7 @@ export default function SignOutForm() {
                                 placeholder="team@robotics.com"
                                 {...field}
                                 className="text-sm"
+                                readOnly
                               />
                             </FormControl>
                             <FormMessage />
@@ -520,6 +536,7 @@ export default function SignOutForm() {
                                 placeholder="team@robotics.com"
                                 {...field}
                                 className="text-sm"
+                                readOnly
                               />
                             </FormControl>
                             <FormMessage />
