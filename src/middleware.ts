@@ -4,7 +4,8 @@ import { headers } from 'next/headers';
 export default auth(async (req: any) => {
   const { nextUrl, auth: session } = req;
   const isLoggedIn = !!session;
-
+  const userEmail = session?.user?.email;
+  console.log(userEmail)
   // Update the public routes to include both pages
   const publicRoutes = ["/login", "/access-denied", "/unauthorized", "/easteregg"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
@@ -19,7 +20,7 @@ export default auth(async (req: any) => {
     try {
       const response = await fetch(`${nextUrl.origin}/api/rbac`, {
         headers: {
-          Cookie: req.headers.get('cookie') || ''
+          'X-User-Email': userEmail || '',
         },
       });
       

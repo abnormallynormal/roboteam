@@ -8,14 +8,10 @@ const secret = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(request: Request) {
   try {
-    // Get the session token and extract user info
-    const token = await getToken({
-      req: request,
-      secret: secret,
-    });
+    const email = request.headers.get('X-User-Email');
 
-    if (!token || !token.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!email) {
+      return NextResponse.json({ error: "Email not provided" }, { status: 400 });
     }
 
     const client = new MongoClient(uri);
@@ -23,7 +19,7 @@ export async function GET(request: Request) {
 
     const db = client.db("roboteam");
     const user = await db.collection("users").findOne({
-      email: token.email,
+      email: email,
     });
 
     await client.close();
