@@ -128,8 +128,8 @@ export default function Navbar() {
                   </NavigationMenuList>
                 </NavigationMenu>
                 <Button
-                  onClick={ () => {
-                   SignOut()
+                  onClick={() => {
+                    SignOut();
                   }}
                 >
                   Log Out
@@ -224,6 +224,9 @@ export default function Navbar() {
                   <Button
                     className="text-sm font-light px-4 mb-2 text-red-600"
                     variant="link"
+                    onClick={() => {
+                      SignOut();
+                    }}
                   >
                     Log Out
                   </Button>
