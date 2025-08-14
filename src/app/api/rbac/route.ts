@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 import { ObjectId } from "mongodb";
+import { getToken } from "next-auth/jwt";
+
 const uri = process.env.MONGODB_URI!;
+const secret = process.env.NEXTAUTH_SECRET!;
 
 export async function GET(request: Request) {
   try {
-    const client = new MongoClient(uri);
-    await client.connect();
+    // Get the session token and extract user info
+    const token = await getToken({
+      req: request,
+      secret: secret,
+    });
 
-    // Get authorization header from request
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader) {
+    if (!token || !token.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1];
-    // You should decode and verify the token here
+    const client = new MongoClient(uri);
+    await client.connect();
 
     const db = client.db("roboteam");
-    // Modify this query to fetch only the specific user's data based on the token
     const user = await db.collection("users").findOne({
-      /* query by user ID/email from token */
+      email: token.email,
     });
 
     await client.close();
@@ -30,8 +33,8 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      role: user.role, // Make sure your user document has a role field
-      permissions: user.permissions, // Optional: include additional permissions if needed
+      role: user.accessLevel,
+      email: user.email,
     });
   } catch (error) {
     console.error("Error fetching user role:", error);

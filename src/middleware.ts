@@ -5,7 +5,8 @@ export default auth(async (req: any) => {
   const { nextUrl, auth: session } = req;
   const isLoggedIn = !!session;
 
-  const publicRoutes = ["/login", "/access-denied", "/easteregg"];
+  // Update the public routes to include both pages
+  const publicRoutes = ["/login", "/access-denied", "/unauthorized", "/easteregg"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
   if (!isLoggedIn && !isPublicRoute) {
@@ -13,48 +14,51 @@ export default auth(async (req: any) => {
     return Response.redirect(loginUrl);
   }
 
-  if (isLoggedIn && nextUrl.pathname === "/login") {
-    const homeUrl = new URL("/", nextUrl.origin);
-    return Response.redirect(homeUrl);
-  }
-
-  // RBAC check
+  // RBAC check - moved before login redirect
   if (isLoggedIn && !isPublicRoute) {
     try {
       const response = await fetch(`${nextUrl.origin}/api/rbac`, {
         headers: {
-          'Authorization': `Bearer ${session.token}`,
+          Cookie: req.headers.get('cookie') || ''
         },
       });
       
       if (!response.ok) {
-        // If user doesn't have permission, redirect to home
-        const homeUrl = new URL("/", nextUrl.origin);
-        return Response.redirect(homeUrl);
+        const accessDeniedUrl = new URL("/unauthorized", nextUrl.origin);
+        return Response.redirect(accessDeniedUrl);
       }
 
       const userData = await response.json();
-      const userRole = userData.role || 'user'; // default to 'user' if no role specified
+      const userRole = userData.role || 'public';
       
+      // If user role is not recognized, redirect to unauthorized page
+      if (!['user', 'exec', 'admin'].includes(userRole)) {
+        const unauthorizedUrl = new URL("/unauthorized", nextUrl.origin);
+        return Response.redirect(unauthorizedUrl);
+      }
+
       const routeAccessData = {
         "user": ['/login', "/signoutform", "/"],
-
         "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/", "/signoutform"],
         "admin": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/", "/partsorders", "/signoutform"]
       };
 
       const allowedRoutes = routeAccessData[userRole as keyof typeof routeAccessData] || [];
       if (!allowedRoutes.includes(nextUrl.pathname)) {
-        // If route is not allowed for user's role, redirect to access denied page
         const accessDeniedUrl = new URL("/access-denied", nextUrl.origin);
         return Response.redirect(accessDeniedUrl);
       }
     } catch (error) {
       console.error('RBAC check failed:', error);
-      // On error, redirect to access denied page
       const accessDeniedUrl = new URL("/access-denied", nextUrl.origin);
       return Response.redirect(accessDeniedUrl);
     }
+  }
+
+  // Login page redirect after RBAC check
+  if (isLoggedIn && nextUrl.pathname === "/login") {
+    const homeUrl = new URL("/", nextUrl.origin);
+    return Response.redirect(homeUrl);
   }
 });
 
