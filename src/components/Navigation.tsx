@@ -68,12 +68,12 @@ export default function Navbar() {
                         >
                           <Link href="/budgeting">Budget</Link>
                         </NavigationMenuLink>
-                        <NavigationMenuLink
+                        {/* <NavigationMenuLink
                           asChild
                           className={navigationMenuTriggerStyle()}
                         >
                           <Link href="/partsorders">Parts Orders</Link>
-                        </NavigationMenuLink>
+                        </NavigationMenuLink> */}
                       </NavigationMenuContent>
                     </NavigationMenuItem>
                     <NavigationMenuItem>
@@ -164,7 +164,7 @@ export default function Navbar() {
                       Budgeting
                     </Button>
                   </div>
-                  <div>
+                  {/* <div>
                     <Button
                       className="px-4 py-0 font-bold text-base h-auto"
                       variant="link"
@@ -172,7 +172,7 @@ export default function Navbar() {
                     >
                       Parts Orders
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="mb-2">
                   <div className="text-sm font-light px-4 mb-2">

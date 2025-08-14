@@ -96,7 +96,7 @@ export default function Forms() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select form" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="w-[var(--radix-select-trigger-width)]">
                 {documents.map((document) => (
                   <SelectItem key={document._id} value={document._id}>
                     {document.name}
@@ -134,13 +134,13 @@ export default function Forms() {
                   <div className="flex-1 min-w-0 flex items-center">
                     <Button
                       value={document.name}
-                      className="text-left whitespace-normal h-auto p-0 w-full justify-start content-center"
+                      className="text-left whitespace-normal h-auto p-0 w-full justify-start"
                       variant="link"
                       onClick={() => {
                         setDisplay(document);
                       }}
                     >
-                      <div className="break-all">{document.name}</div>
+                      <div className="">{document.name}</div>
                     </Button>
                   </div>
                 </div>
@@ -150,7 +150,7 @@ export default function Forms() {
           {/* Main Content */}
           <Card className="overflow-x-auto">
             <div className="font-semibold text-lg md:text-xl mx-4 flex flex-row items-start justify-between">
-              <div>{`Responses for ${display?.name || "..."}`}</div>
+              <div>{display?.name ? `Responses for ${display.name}` : ""}</div>
               <Dialog open={dialog} onOpenChange={setDialog}>
                 <DialogTrigger asChild className="hidden sm:flex">
                   <Button variant="secondary">

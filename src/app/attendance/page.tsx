@@ -230,7 +230,9 @@ export default function Attendance() {
             </div>
           </Card>
           <div className="flex flex-row lg:hidden items-center gap-4">
-            <div className="text-base font-semibold">Select date to view attendance:</div>
+            <div className="text-base font-semibold">
+              Select date to view attendance:
+            </div>
             <Popover open={lgCalendarOpen} onOpenChange={setLgCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -474,28 +476,38 @@ export default function Attendance() {
         </div>
       </div>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="max-h-[90vh] overflow-hidden flex flex-col max-w-[80vw]">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{inspectedMember?.name}</DialogTitle>
             <DialogDescription>{inspectedMember?.team}</DialogDescription>
-            <div className="sm:grid grid-cols-[auto_1fr] gap-4">
-              <AttendanceCalendar
-                mode="single"
-                selected={selectedDate}
-                presentDates={inspectedMember?.presentDates}
-                absentDates={inspectedMember?.absentDates}
-                lateDates={inspectedMember?.lateDates}
-              />
-              <div>
-                <ScrollArea className="w-full h-[300px]">
-                  <Accordion type="multiple" className="pr-4">
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 p-1">
+              <div className="flex justify-center sm:justify-start">
+                <AttendanceCalendar
+                  mode="single"
+                  selected={selectedDate}
+                  presentDates={inspectedMember?.presentDates}
+                  absentDates={inspectedMember?.absentDates}
+                  lateDates={inspectedMember?.lateDates}
+                />
+              </div>
+
+              <div className="min-w-0">
+                <ScrollArea className="w-full h-[300px] sm:h-[350px]">
+                  <Accordion type="multiple" className="w-auto pr-4">
                     <AccordionItem value="present">
                       <AccordionTrigger>
                         Present: {inspectedMember?.presentDates.length}
                       </AccordionTrigger>
                       <AccordionContent>
                         {inspectedMember?.presentDates.map((date) => {
-                          return <div key={date}>{date}</div>;
+                          return (
+                            <div key={date} className="py-1">
+                              {date}
+                            </div>
+                          );
                         })}
                       </AccordionContent>
                     </AccordionItem>
@@ -505,7 +517,11 @@ export default function Attendance() {
                       </AccordionTrigger>
                       <AccordionContent>
                         {inspectedMember?.lateDates.map((date) => {
-                          return <div key={date}>{date}</div>;
+                          return (
+                            <div key={date} className="py-1">
+                              {date}
+                            </div>
+                          );
                         })}
                       </AccordionContent>
                     </AccordionItem>
@@ -515,7 +531,11 @@ export default function Attendance() {
                       </AccordionTrigger>
                       <AccordionContent>
                         {inspectedMember?.absentDates.map((date) => {
-                          return <div key={date}>{date}</div>;
+                          return (
+                            <div key={date} className="py-1">
+                              {date}
+                            </div>
+                          );
                         })}
                       </AccordionContent>
                     </AccordionItem>
@@ -523,7 +543,7 @@ export default function Attendance() {
                 </ScrollArea>
               </div>
             </div>
-          </DialogHeader>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

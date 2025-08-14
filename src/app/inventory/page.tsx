@@ -119,7 +119,7 @@ export default function Inventory() {
         <div className="mb-8 text-sm md:text-base">
           Track parts, components, and equipment for your team.
         </div>
-        <div className="grid grid-rows-[auto_1fr] lg:grid lg:grid-cols-[auto_1fr] gap-4 md:gap-6">
+        <div className="grid grid-rows-[auto_1fr] lg:grid lg:grid-cols-[2fr_7fr] gap-4 md:gap-6">
           <div className="grid grid-cols-[1fr_auto] gap-4 sm:hidden">
             <Select
               value={display?.collectionName || ""}
@@ -205,27 +205,29 @@ export default function Inventory() {
               </PopoverContent>
             </Popover>
           </div>
-          <Card className="h-fit gap-1 hidden sm:block">
+          <Card className="h-fit  hidden sm:block">
             <div className="font-semibold mx-4 mb-2 text-xl">
               Select inventory count
             </div>
             {collections.map((collection) => (
               <div
-                className="flex items-center mx-4"
+                className="flex items-center mx-4 gap-3 mb-1"
                 key={collection.collectionName}
               >
-                <File />
-                <Button
-                  value={collection.collectionName}
-                  className="justify-self-start"
-                  variant="link"
-                  key={collection.collectionName}
-                  onClick={() => {
-                    setDisplay(collection);
-                  }}
-                >
-                  {collection.collectionName}
-                </Button>
+                <File className=" mt-1 flex-shrink-0" />
+                <div className="flex-1 min-w-0 flex items-center">
+                  <Button
+                    value={collection.collectionName}
+                    className="text-left whitespace-normal h-auto p-0 w-full justify-start"
+                    variant="link"
+                    key={collection.collectionName}
+                    onClick={() => {
+                      setDisplay(collection);
+                    }}
+                  >
+                    {collection.collectionName}
+                  </Button>
+                </div>
               </div>
             ))}
           </Card>
