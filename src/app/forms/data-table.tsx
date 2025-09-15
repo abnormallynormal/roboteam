@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -36,6 +36,7 @@ export function DataTable<TData, TValue>({
     { id: "team", desc: false }
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
   const table = useReactTable({
     data,
     columns,
@@ -59,8 +60,9 @@ export function DataTable<TData, TValue>({
           setColumnFilters={setColumnFilters}
         />
       </div>
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-x-auto relative">
+        <div className=""></div>
+        <Table className="">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

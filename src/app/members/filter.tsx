@@ -48,7 +48,7 @@ export default function FilterPopup({
   };
 
   return (
-    <div className="grid md:grid-cols-[1fr_auto_auto] gap-4">
+    <div className="grid grid-cols-[1fr_auto_auto] gap-2 sm:gap-4">
       <div>
         <Input
           placeholder="Search by name"

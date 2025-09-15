@@ -61,7 +61,7 @@ export default function FilterPopup({
   const hasActiveFilters = name.length > 0 || selectedTeams.length > 0 || selectedCompletionStatus.length > 0;
 
   return (
-    <div className="grid md:grid-cols-[1fr_auto] gap-4">
+    <div className="grid grid-cols-[1fr_auto] gap-4">
       <div>
         <Input
           placeholder="Search by name"
