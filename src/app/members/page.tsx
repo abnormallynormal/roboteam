@@ -107,7 +107,7 @@ export default function Members() {
       <Navbar />
 
       <div className="mx-6 md:mx-24 py-16">
-        <Button onClick={() => addMembers()}>goobers</Button>
+        {/* <Button onClick={() => addMembers()}>goobers</Button> */}
         <div className="text-2xl md:text-3xl font-bold my-2">Members</div>
         <div className="mb-8 text-sm md:text-base">Edit team member list.</div>
         <div className="text-xl md:text-2xl font-semibold mt-8 mb-4">
