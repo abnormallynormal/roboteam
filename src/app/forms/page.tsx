@@ -91,6 +91,7 @@ export default function Forms() {
                   );
                   if (selectedDocument) {
                     setDisplay(selectedDocument);
+                    setSwitchDetector(!switchDetector)
                   }
                 }}
               >
@@ -144,6 +145,7 @@ export default function Forms() {
                       variant="link"
                       onClick={() => {
                         setDisplay(document);
+                        setSwitchDetector(!switchDetector);
                       }}
                     >
                       <div className="">{document.name}</div>

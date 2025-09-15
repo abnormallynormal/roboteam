@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 import { ObjectId } from "mongodb";
+import { Member } from "@/app/members/columns";
 const uri = process.env.MONGODB_URI!;
 
 export async function GET(request: Request) {
@@ -24,10 +25,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const teamMembers = [{name: "lebron", team: "82855G"}, {name: "curry", team: "82855S"}, {name: "thompson", team: "82855T"}]
     const client = new MongoClient(uri);
     await client.connect();
-    const { name, type, amount, suppForms } = await request.json();
+    const { name, type, amount, suppForms, teamMembers} = await request.json();
     const items: any[] = [];
     const responses: any[] = [];
     const db = client.db("roboteam");
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         amount: item.type.toString() === "Payment" ? item.amount : 0,
       });
     });
-    teamMembers.flatMap((member) => {
+    teamMembers.flatMap((member: Member) => {
       responses.push({
         id: new ObjectId(),
         name: member.name,

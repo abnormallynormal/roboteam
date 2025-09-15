@@ -42,9 +42,7 @@ export type Transaction = {
   category: (typeof category)[number]["value"];
   date: string;
 };
-/*************  ✨ Windsurf Command ⭐  *************/
-  /**
-/*******  269d71c0-9559-43f2-a981-e94f48d6a711  *******/export const columns = (
+export const columns = (
   collection: string,
   team: string,
   onItemAdded: () => void,

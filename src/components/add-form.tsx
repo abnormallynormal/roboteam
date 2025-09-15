@@ -1,7 +1,6 @@
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Member } from "@/app/members/columns";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Trash } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
+import { useState } from "react";
 const suppFormSchema = z
   .object({
     name: z.string().min(1, {
@@ -75,9 +76,12 @@ const formSchema = z
     }
   });
 
-export default function AddForm(
-  {handleSubmit}: {handleSubmit: () => void}
-) {
+export default function AddForm({
+  handleSubmit,
+}: {
+  handleSubmit: () => void;
+}) {
+  const [members, setMembers] = useState<Member[]>([]);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -94,9 +98,22 @@ export default function AddForm(
     name: "suppForms",
     control: form.control,
   });
+  const fetchData = async () => {
+    const result = await fetch(`/api/member-list`);
+    const data = await result.json();
+    const temp: Member[] = [];
+    data.forEach((member: any) => {
+      temp.push({
+        _id: member._id,
+        name: member.name,
+        team: member.team,
+      });
+    });
+    return temp; // Return the data instead of setting state
+  };
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("hi");
-    console.log(values);
+    const membersData = await fetchData(); // Get the data directly
+    console.log(membersData); // This will show the actual data
     try {
       const response = await fetch(`/api/forms`, {
         method: "POST",
@@ -104,7 +121,8 @@ export default function AddForm(
           name: values.name,
           type: values.type,
           amount: values.amount,
-          suppForms: values.suppForms
+          suppForms: values.suppForms,
+          teamMembers: membersData // Use the fetched data directly
         }),
         headers: {
           "Content-Type": "application/json",

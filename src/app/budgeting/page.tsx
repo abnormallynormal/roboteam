@@ -56,7 +56,7 @@ export default function Budgeting() {
           Track expenses, manage budget, and monitor financial health.
         </div>
         <div className="text-xl md:text-2xl font-semibold mt-8 mb-4">Transactions</div>
-        <div className="relative">
+        <div className="">
           <DataTable
             columns={columns(
               "yourCollection",
@@ -68,16 +68,7 @@ export default function Budgeting() {
            
           />
         </div>
-        <Dialog
-          open={open}
-          onOpenChange={() => {
-            setOpen(false);
-          }}
-        >
-          <DialogContent>
-            <DialogTitle>Edit Categories</DialogTitle>
-          </DialogContent>
-        </Dialog>
+        
       </div>
     </div>
   );

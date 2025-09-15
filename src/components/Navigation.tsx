@@ -12,7 +12,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import {
   Sheet,
@@ -25,9 +25,24 @@ import { SignOut } from "../lib/auth-action";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
-    <nav className="fixed w-full z-20 top-0 start-0 bg-white dark:bg-black">
+    <nav className={`fixed w-full z-20 top-0 start-0 backdrop-blur-md transition-colors duration-300 ${
+      isScrolled 
+        ? 'bg-gray-200/80 dark:bg-gray-800/80' 
+        : 'bg-white/50 dark:bg-black/50'
+    }`}>
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex flex-row w-full justify-between">
@@ -119,6 +134,12 @@ export default function Navbar() {
                           className={navigationMenuTriggerStyle()}
                         >
                           <Link href="/forms">Forms</Link>
+                        </NavigationMenuLink>
+                        <NavigationMenuLink
+                          asChild
+                          className={navigationMenuTriggerStyle()}
+                        >
+                          <Link href="/members">Member List</Link>
                         </NavigationMenuLink>
                       </NavigationMenuContent>
                     </NavigationMenuItem>
@@ -212,11 +233,20 @@ export default function Navbar() {
                   </div>
                   <div>
                     <Button
-                      className="px-4 font-bold text-base h-auto py-0"
+                      className="px-4 mb-2 font-bold text-base h-auto py-0"
                       variant="link"
                       onClick={() => router.push("/forms")}
                     >
                       Forms
+                    </Button>
+                  </div>
+                  <div>
+                    <Button
+                      className="px-4 font-bold text-base h-auto py-0"
+                      variant="link"
+                      onClick={() => router.push("/members")}
+                    >
+                      Member List
                     </Button>
                   </div>
                 </div>

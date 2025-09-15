@@ -55,7 +55,6 @@ export default function Attendance() {
   // ALL HOOKS MUST BE AT THE TOP
   const router = useRouter();
   const [switchDetector, setSwitchDetector] = useState(false);
-  const [isLoading, setIsLoading] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date>(
     new Date()
@@ -67,6 +66,8 @@ export default function Attendance() {
   const [inspectedMember, setInspectedMember] = useState<Member>();
   const [needsSorting, setNeedsSorting] = useState(false);
   const [lgCalendarOpen, setLgCalendarOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [membersPerPage] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,6 +154,8 @@ export default function Attendance() {
             case "absent":
               updatedMember.absentDates.push(dateString);
               break;
+            case "unmarked":
+              break;
           }
           return updatedMember;
         }
@@ -178,15 +181,14 @@ export default function Attendance() {
       if (!response.ok) {
         throw new Error("Failed to update attendance");
       }
-      toast.success(`Attendance marked as ${status}`);
+      const statusMessage = status === "unmarked" ? "cleared" : status;
+      toast.success(`Attendance ${statusMessage}`);
       const result = await response.json();
       console.log("Success:", result);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to update attendance"
       );
-    } finally {
-      setIsLoading(null);
     }
   };
 
@@ -198,6 +200,17 @@ export default function Attendance() {
       selectedTeams.length === 0 || selectedTeams.includes(member.team);
     return matchesSearch && matchesTeam;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredMembers.length / membersPerPage);
+  const startIndex = (currentPage - 1) * membersPerPage;
+  const endIndex = startIndex + membersPerPage;
+  const paginatedMembers = filteredMembers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedTeams]);
 
   return (
     <div>
@@ -263,7 +276,7 @@ export default function Attendance() {
             <div className="mx-4 mb-6 text-xl md:text-2xl font-bold">
               Attendance for {selectedDate.toLocaleDateString().slice(0, 10)}
             </div>
-            <div className="mx-4 grid grid-cols-[1fr_auto] gap-2">
+            <div className="mx-4 grid grid-cols-[1fr_auto_auto] gap-2">
               <Input
                 placeholder="Search for team members"
                 value={searchTerm}
@@ -306,12 +319,25 @@ export default function Attendance() {
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedTeams([]);
+                  setCurrentPage(1);
+                }}
+                disabled={searchTerm === "" && selectedTeams.length === 0}
+                className="text-sm"
+              >
+                Clear filters
+              </Button>
             </div>
             <div className="space-y-2">
               {filteredMembers.length === 0 ? (
                 <div className="text-center mt-6">No members found</div>
               ) : (
-                filteredMembers.map((member) => (
+                paginatedMembers.map((member) => (
                   <Card key={member._id} className="mx-4 mt-4 p-4">
                     <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
                       <div className="grid grid-rows-2">
@@ -329,16 +355,16 @@ export default function Attendance() {
                         </Button>
                         <div className="text-sm">{member.team}</div>
                       </div>
-                      <div className="hidden sm:block grid-cols-3 gap-2 items-center">
+                      <div className="hidden sm:flex flex-col items-end space-y-2">
+                        <div className="flex gap-2">
                         {member.presentDates.includes(
                           selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
                           <Button
                             variant="outline"
                             className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Present"}
+                            Present
                           </Button>
                         ) : (
                           <Button
@@ -347,9 +373,8 @@ export default function Attendance() {
                             onClick={() =>
                               updateAttendance(member._id, "present")
                             }
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Present"}
+                            Present
                           </Button>
                         )}
                         {member.lateDates.includes(
@@ -358,18 +383,16 @@ export default function Attendance() {
                           <Button
                             variant="outline"
                             className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Late"}
+                            Late
                           </Button>
                         ) : (
                           <Button
                             variant="outline"
                             className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
                             onClick={() => updateAttendance(member._id, "late")}
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Late"}
+                            Late
                           </Button>
                         )}
                         {member.absentDates.includes(
@@ -378,9 +401,8 @@ export default function Attendance() {
                           <Button
                             variant="outline"
                             className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Absent"}
+                            Absent
                           </Button>
                         ) : (
                           <Button
@@ -389,20 +411,28 @@ export default function Attendance() {
                             onClick={() =>
                               updateAttendance(member._id, "absent")
                             }
-                            disabled={isLoading === member._id}
                           >
-                            {isLoading === member._id ? "..." : "Absent"}
+                            Absent
                           </Button>
                         )}
+                        </div>
+                        <button
+                          className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                          onClick={() =>
+                            updateAttendance(member._id, "unmarked")
+                          }
+                        >
+                          Clear
+                        </button>
                       </div>
-                      <div className="sm:hidden grid-cols-3 gap-2 items-center">
+                      <div className="sm:hidden flex flex-col items-end space-y-2">
+                        <div className="flex gap-2">
                         {member.presentDates.includes(
                           selectedDate.toLocaleDateString().slice(0, 10)
                         ) ? (
                           <Button
                             variant="outline"
                             className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <Check />
@@ -414,7 +444,6 @@ export default function Attendance() {
                             onClick={() =>
                               updateAttendance(member._id, "present")
                             }
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <Check />
@@ -426,7 +455,6 @@ export default function Attendance() {
                           <Button
                             variant="outline"
                             className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <Clock />
@@ -436,7 +464,6 @@ export default function Attendance() {
                             variant="outline"
                             className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
                             onClick={() => updateAttendance(member._id, "late")}
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <Clock />
@@ -448,7 +475,6 @@ export default function Attendance() {
                           <Button
                             variant="outline"
                             className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <X />
@@ -460,18 +486,67 @@ export default function Attendance() {
                             onClick={() =>
                               updateAttendance(member._id, "absent")
                             }
-                            disabled={isLoading === member._id}
                             size="icon"
                           >
                             <X />
                           </Button>
                         )}
+                        </div>
+                        <button
+                          className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                          onClick={() =>
+                            updateAttendance(member._id, "unmarked")
+                          }
+                        >
+                          Clear
+                        </button>
                       </div>
                     </div>
                   </Card>
                 ))
               )}
             </div>
+            
+            {/* Pagination Controls */}
+            {filteredMembers.length > membersPerPage && (
+              <div className="flex items-center justify-between px-4 py-3 mt-4">
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredMembers.length)} of{" "}
+                  {filteredMembers.length} members
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </Button>
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
       </div>

@@ -6,7 +6,7 @@ export default auth(async (req: any) => {
   const isLoggedIn = !!session;
   const userEmail = session?.user?.email;
 
-  const publicRoutes = ["/login", "/access-denied", "/unauthorized", "/easteregg"];
+  const publicRoutes = ["/login", "/access-denied", "/unauthorized", "/easteregg", "/signoutform"];
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
   if (!isLoggedIn && !isPublicRoute) {
@@ -32,9 +32,9 @@ export default auth(async (req: any) => {
       const userRole = userData.role || 'public';
       
       const routeAccessData = {
-        "user": ['/login', "/signoutform", "/"],
-        "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/", "/signoutform"],
-        "admin": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/", "/partsorders", "/signoutform"]
+        "user": ['/login', "/signoutform", "/", "/members"],
+        "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members"],
+        "admin": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members"]
       };
 
       const allowedRoutes = routeAccessData[userRole as keyof typeof routeAccessData] || [];
@@ -57,7 +57,7 @@ export default auth(async (req: any) => {
     }
   }
 
-  // Remove the original login redirect since it's now handled in the RBAC check
+  // Remove the original login redirect since it's now handled in the RBAC check.
 });
 
 export const config = {

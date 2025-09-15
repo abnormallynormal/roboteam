@@ -235,9 +235,9 @@ export default function AddTransactionForm({
                   </Command>
                 </PopoverContent>
               </Popover>
-              <FormDescription>
+              {/* <FormDescription>
                 To add a category, double click the category header
-              </FormDescription>
+              </FormDescription> */}
               <FormMessage />
             </FormItem>
           )}

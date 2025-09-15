@@ -16,19 +16,18 @@ export async function PATCH(
 
     const db = client.db("roboteam");
     await db
-      .collection("members")
+      .collection("attendance")
       .updateOne({ _id: new ObjectId(id) }, { $pull: { present: date } });
     await db
-      .collection("members")
+      .collection("attendance")
       .updateOne({ _id: new ObjectId(id) }, { $pull: { late: date } });
     await db
-      .collection("members")
+      .collection("attendance")
       .updateOne({ _id: new ObjectId(id) }, { $pull: { absent: date } });
 
-    const result = await db.collection("members").updateOne(
-      { _id: new ObjectId(id) },
-      { $push: { [status]: date } }
-    );
+    const result = await db
+      .collection("attendance")
+      .updateOne({ _id: new ObjectId(id) }, { $push: { [status]: date } });
 
     await client.close();
     return NextResponse.json({ message: "Status updated successfully" });

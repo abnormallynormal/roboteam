@@ -27,6 +27,10 @@ export type Payment = {
   team: string;
   amount: number;
   paid: boolean;
+  memberResponses: Array<{
+    formName: string;
+    completed: boolean;
+  }>;
 };
 
 export const columns = (
@@ -37,13 +41,52 @@ export const columns = (
   {
     accessorKey: "name",
     header: "Name",
+    filterFn: "includesString",
     cell: ({ row }) => {
       return <div>{row.original.name}</div>;
     },
   },
   {
     accessorKey: "team",
-    header: "Team",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Team 
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    filterFn: (row, columnId, filterValue) => {
+      if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
+      return filterValue.includes(row.getValue(columnId));
+    },
+    sortingFn: (rowA, rowB) => {
+      const a = rowA.getValue("team") as string;
+      const b = rowB.getValue("team") as string;
+      return a.localeCompare(b);
+    },
+    sortDescFirst: true,
+  },
+  {
+    accessorKey: "completion",
+    header: () => null, // Hide the header
+    filterFn: (row: any, columnId: any, filterValue: any) => {
+      if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
+      
+      // Check if all forms are completed
+      const allCompleted = row.original.memberResponses.every(
+        (response: any) => response.completed === true
+      );
+      
+      const status = allCompleted ? "complete" : "incomplete";
+      return filterValue.includes(status);
+    },
+    cell: () => null, // Hide the cell content
+    enableSorting: false,
+    size: 0, // Minimize column width
   },
   ...arr.map((item) => ({
     accessorKey: item.name,
@@ -63,9 +106,10 @@ export const columns = (
     },
     cell: ({ row }: { row: any }) => {
       console.log(row.original.name);
-      const value = row.original.memberResponses.find((response: any) => response.formName === item.name).completed;
-      
-      
+      const value = row.original.memberResponses.find(
+        (response: any) => response.formName === item.name
+      ).completed;
+
       return (
         <Checkbox
           defaultChecked={value}
