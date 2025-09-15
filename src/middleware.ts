@@ -33,8 +33,8 @@ export default auth(async (req: any) => {
       
       const routeAccessData = {
         "user": ['/login', "/signoutform", "/", "/members"],
-        "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members"],
-        "admin": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members"]
+        "exec": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members", "/"],
+        "admin": ['/login', "/budgeting", "/attendance", "/inventory", "/signoutsheet", "/forms", "/partsorders", "/signoutform", "/members", "/"]
       };
 
       const allowedRoutes = routeAccessData[userRole as keyof typeof routeAccessData] || [];
