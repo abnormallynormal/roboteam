@@ -52,6 +52,7 @@ const inventoryCategories = [
   { value: "Wheels", label: "Wheels" },
   { value: "Motors", label: "Motors" },
   { value: "Electronics", label: "Electronics" },
+  { value: "Sensors", label: "Sensors" },
   { value: "Gears", label: "Gears" },
   { value: "Pneumatics", label: "Pneumatics" },
   { value: "Tools", label: "Tools" },

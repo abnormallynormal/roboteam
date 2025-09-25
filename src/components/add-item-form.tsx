@@ -49,6 +49,8 @@ const category = [
   { value: "Wheels", label: "Wheels" },
   { value: "Motors", label: "Motors" },
   { value: "Electronics", label: "Electronics" },
+  { value: "Sensors", label: "Sensors" },
+  { value: "Electronics", label: "Electronics" },
   { value: "Gears", label: "Gears" },
   { value: "Pneumatics", label: "Pneumatics" },
   { value: "Tools", label: "Tools" },
