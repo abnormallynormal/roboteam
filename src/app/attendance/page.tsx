@@ -133,7 +133,7 @@ export default function Attendance() {
     setMembers((prevMembers) => {
       return prevMembers.map((member) => {
         if (member._id === memberId) {
-          const dateString = selectedDate.toLocaleDateString().slice(0, 10);
+          const dateString = selectedDate.toLocaleDateString();
           const updatedMember = {
             ...member,
             presentDates: member.presentDates.filter(
@@ -233,8 +233,14 @@ export default function Attendance() {
                 onSelect={(selectedDate) => {
                   if (selectedDate) {
                     setSelectedDate(selectedDate);
-                    console.log(members);
                     console.log(selectedDate);
+                    console.log(
+                      new Date(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                      ).toLocaleDateString()
+                    );
                   }
                 }}
                 className="rounded-lg border [--cell-size:--spacing(9)] mt-4"
@@ -274,7 +280,7 @@ export default function Attendance() {
           </div>
           <Card className="h-fit gap-0">
             <div className="mx-4 mb-6 text-xl md:text-2xl font-bold">
-              Attendance for {selectedDate.toLocaleDateString().slice(0, 10)}
+              Attendance for {selectedDate.toLocaleDateString()}
             </div>
             <div className="mx-4 grid grid-cols-[1fr_auto_auto] gap-2">
               <Input
@@ -357,64 +363,81 @@ export default function Attendance() {
                       </div>
                       <div className="hidden sm:flex flex-col items-end space-y-2">
                         <div className="flex gap-2">
-                        {member.presentDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                          >
-                            Present
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            onClick={() =>
-                              updateAttendance(member._id, "present")
-                            }
-                          >
-                            Present
-                          </Button>
-                        )}
-                        {member.lateDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                          >
-                            Late
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            onClick={() => updateAttendance(member._id, "late")}
-                          >
-                            Late
-                          </Button>
-                        )}
-                        {member.absentDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                          >
-                            Absent
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            onClick={() =>
-                              updateAttendance(member._id, "absent")
-                            }
-                          >
-                            Absent
-                          </Button>
-                        )}
+                          {member.presentDates.some((dateStr) => {
+                            console.log(dateStr, new Date(dateStr))
+                            console.log(selectedDate.toLocaleDateString())
+                            const presentDate = new Date(dateStr);
+                            console.log(presentDate.toLocaleDateString(), selectedDate.toLocaleDateString(), selectedDate.toDateString(), presentDate.toDateString())
+                            return (
+                              presentDate.toDateString() ===
+                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
+                            );
+                          }) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                            >
+                              Present
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "present")
+                              }
+                            >
+                              Present
+                            </Button>
+                          )}
+                          {member.lateDates.some((dateStr) => {
+                            const lateDate = new Date(dateStr);
+                            return (
+                              lateDate.toDateString() ===
+                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
+                            );
+                          }) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                            >
+                              Late
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "late")
+                              }
+                            >
+                              Late
+                            </Button>
+                          )}
+                          {member.absentDates.some((dateStr) => {
+                            const absentDate = new Date(dateStr);
+                            return (
+                              absentDate.toDateString() ===
+                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
+                            );
+                          }) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                            >
+                              Absent
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "absent")
+                              }
+                            >
+                              Absent
+                            </Button>
+                          )}
                         </div>
                         <button
                           className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
@@ -427,70 +450,72 @@ export default function Attendance() {
                       </div>
                       <div className="sm:hidden flex flex-col items-end space-y-2">
                         <div className="flex gap-2">
-                        {member.presentDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            size="icon"
-                          >
-                            <Check />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            onClick={() =>
-                              updateAttendance(member._id, "present")
-                            }
-                            size="icon"
-                          >
-                            <Check />
-                          </Button>
-                        )}
-                        {member.lateDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            size="icon"
-                          >
-                            <Clock />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            onClick={() => updateAttendance(member._id, "late")}
-                            size="icon"
-                          >
-                            <Clock />
-                          </Button>
-                        )}
-                        {member.absentDates.includes(
-                          selectedDate.toLocaleDateString().slice(0, 10)
-                        ) ? (
-                          <Button
-                            variant="outline"
-                            className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            size="icon"
-                          >
-                            <X />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            onClick={() =>
-                              updateAttendance(member._id, "absent")
-                            }
-                            size="icon"
-                          >
-                            <X />
-                          </Button>
-                        )}
+                          {member.presentDates.includes(
+                            selectedDate.toLocaleDateString()
+                          ) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                              size="icon"
+                            >
+                              <Check />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "present")
+                              }
+                              size="icon"
+                            >
+                              <Check />
+                            </Button>
+                          )}
+                          {member.lateDates.includes(
+                            selectedDate.toLocaleDateString()
+                          ) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                              size="icon"
+                            >
+                              <Clock />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "late")
+                              }
+                              size="icon"
+                            >
+                              <Clock />
+                            </Button>
+                          )}
+                          {member.absentDates.includes(
+                            selectedDate.toLocaleDateString()
+                          ) ? (
+                            <Button
+                              variant="outline"
+                              className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                              size="icon"
+                            >
+                              <X />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                              onClick={() =>
+                                updateAttendance(member._id, "absent")
+                              }
+                              size="icon"
+                            >
+                              <X />
+                            </Button>
+                          )}
                         </div>
                         <button
                           className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
@@ -506,40 +531,47 @@ export default function Attendance() {
                 ))
               )}
             </div>
-            
+
             {/* Pagination Controls */}
             {filteredMembers.length > membersPerPage && (
               <div className="flex items-center justify-between px-4 py-3 mt-4">
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing {startIndex + 1} to {Math.min(endIndex, filteredMembers.length)} of{" "}
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(endIndex, filteredMembers.length)} of{" "}
                   {filteredMembers.length} members
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1}
                   >
                     Previous
                   </Button>
                   <div className="flex items-center space-x-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className="w-8 h-8 p-0"
-                      >
-                        {page}
-                      </Button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {page}
+                        </Button>
+                      )
+                    )}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages}
                   >
                     Next
