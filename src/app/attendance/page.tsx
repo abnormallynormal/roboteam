@@ -416,6 +416,7 @@ export default function Attendance() {
                           )}
                           {member.absentDates.some((dateStr) => {
                             const absentDate = new Date(dateStr);
+                            console.log("oops")
                             return (
                               absentDate.toDateString() ===
                               selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
