@@ -4,7 +4,15 @@ import * as React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import Navbar from "@/components/Navigation";
-import { Ban, CalendarIcon, Check, ChevronDownIcon, Clock, Filter, X } from "lucide-react";
+import {
+  Ban,
+  CalendarIcon,
+  Check,
+  ChevronDownIcon,
+  Clock,
+  Filter,
+  X,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
@@ -41,6 +49,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
 interface Member {
   _id: string;
   name: string;
@@ -50,6 +59,30 @@ interface Member {
   lateDates: string[];
 }
 type AttendanceStatus = "present" | "late" | "absent" | "unmarked";
+
+// Helper function to convert Date to ISO string (YYYY-MM-DD)
+const toISODateString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Helper function to parse ISO date string in local timezone
+const parseISODateLocal = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
+// Helper function to format date for display
+const formatDisplayDate = (dateStr: string): string => {
+  const date = parseISODateLocal(dateStr);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 export default function Attendance() {
   // ALL HOOKS MUST BE AT THE TOP
@@ -130,10 +163,11 @@ export default function Attendance() {
     memberId: string,
     status: AttendanceStatus
   ) => {
+    const dateString = toISODateString(selectedDate);
+
     setMembers((prevMembers) => {
       return prevMembers.map((member) => {
         if (member._id === memberId) {
-          const dateString = selectedDate.toLocaleDateString();
           const updatedMember = {
             ...member,
             presentDates: member.presentDates.filter(
@@ -170,11 +204,7 @@ export default function Attendance() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          date: new Date(
-            selectedDate.getFullYear(),
-            selectedDate.getMonth(),
-            selectedDate.getDate()
-          ).toLocaleDateString(),
+          date: dateString,
           status,
         }),
       });
@@ -233,14 +263,6 @@ export default function Attendance() {
                 onSelect={(selectedDate) => {
                   if (selectedDate) {
                     setSelectedDate(selectedDate);
-                    console.log(selectedDate);
-                    console.log(
-                      new Date(
-                        selectedDate.getFullYear(),
-                        selectedDate.getMonth(),
-                        selectedDate.getDate()
-                      ).toLocaleDateString()
-                    );
                   }
                 }}
                 className="rounded-lg border [--cell-size:--spacing(9)] mt-4"
@@ -260,7 +282,7 @@ export default function Attendance() {
                   className="w-fit justify-between font-normal"
                 >
                   {selectedDate
-                    ? selectedDate.toLocaleDateString()
+                    ? formatDisplayDate(toISODateString(selectedDate))
                     : "Select date"}
                   <ChevronDownIcon />
                 </Button>
@@ -280,7 +302,7 @@ export default function Attendance() {
           </div>
           <Card className="h-fit gap-0">
             <div className="mx-4 mb-6 text-xl md:text-2xl font-bold">
-              Attendance for {selectedDate.toLocaleDateString()}
+              Attendance for {formatDisplayDate(toISODateString(selectedDate))}
             </div>
             <div className="mx-4 grid grid-cols-[1fr_auto_auto] gap-2">
               <Input
@@ -343,193 +365,173 @@ export default function Attendance() {
               {filteredMembers.length === 0 ? (
                 <div className="text-center mt-6">No members found</div>
               ) : (
-                paginatedMembers.map((member) => (
-                  <Card key={member._id} className="mx-4 mt-4 p-4">
-                    <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-                      <div className="grid grid-rows-2">
-                        <Button
-                          className="justify-start gap-0 p-0 h-fit"
-                          variant="link"
-                          onClick={() => {
-                            setDialogOpen(true);
-                            setInspectedMember(member);
-                          }}
-                        >
-                          <div className="text-base font-semibold">
-                            {member.name}
+                paginatedMembers.map((member) => {
+                  const currentDateISO = toISODateString(selectedDate);
+                  const isPresent =
+                    member.presentDates.includes(currentDateISO);
+                  const isLate = member.lateDates.includes(currentDateISO);
+                  const isAbsent = member.absentDates.includes(currentDateISO);
+
+                  return (
+                    <Card key={member._id} className="mx-4 mt-4 p-4">
+                      <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                        <div className="grid grid-rows-2">
+                          <Button
+                            className="justify-start gap-0 p-0 h-fit"
+                            variant="link"
+                            onClick={() => {
+                              setDialogOpen(true);
+                              setInspectedMember(member);
+                            }}
+                          >
+                            <div className="text-base font-semibold">
+                              {member.name}
+                            </div>
+                          </Button>
+                          <div className="text-sm">{member.team}</div>
+                        </div>
+                        <div className="hidden sm:flex flex-col items-end space-y-2">
+                          <div className="flex gap-2">
+                            {isPresent ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                              >
+                                Present
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "present")
+                                }
+                              >
+                                Present
+                              </Button>
+                            )}
+                            {isLate ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                              >
+                                Late
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "late")
+                                }
+                              >
+                                Late
+                              </Button>
+                            )}
+                            {isAbsent ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                              >
+                                Absent
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "absent")
+                                }
+                              >
+                                Absent
+                              </Button>
+                            )}
                           </div>
-                        </Button>
-                        <div className="text-sm">{member.team}</div>
-                      </div>
-                      <div className="hidden sm:flex flex-col items-end space-y-2">
-                        <div className="flex gap-2">
-                          {member.presentDates.some((dateStr) => {
-                            console.log(dateStr, new Date(dateStr))
-                            console.log(selectedDate.toLocaleDateString())
-                            const presentDate = new Date(dateStr);
-                            console.log(presentDate.toLocaleDateString(), selectedDate.toLocaleDateString(), selectedDate.toDateString(), presentDate.toDateString())
-                            return (
-                              presentDate.toDateString() ===
-                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
-                            );
-                          }) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                            >
-                              Present
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "present")
-                              }
-                            >
-                              Present
-                            </Button>
-                          )}
-                          {member.lateDates.some((dateStr) => {
-                            const lateDate = new Date(dateStr);
-                            return (
-                              lateDate.toDateString() ===
-                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
-                            );
-                          }) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                            >
-                              Late
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "late")
-                              }
-                            >
-                              Late
-                            </Button>
-                          )}
-                          {member.absentDates.some((dateStr) => {
-                            const absentDate = new Date(dateStr);
-                            console.log("oops")
-                            return (
-                              absentDate.toDateString() ===
-                              selectedDate.toDateString() || dateStr === selectedDate.toLocaleDateString()
-                            );
-                          }) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                            >
-                              Absent
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "absent")
-                              }
-                            >
-                              Absent
-                            </Button>
-                          )}
+                          <button
+                            className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                            onClick={() =>
+                              updateAttendance(member._id, "unmarked")
+                            }
+                          >
+                            Clear
+                          </button>
                         </div>
-                        <button
-                          className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
-                          onClick={() =>
-                            updateAttendance(member._id, "unmarked")
-                          }
-                        >
-                          Clear
-                        </button>
-                      </div>
-                      <div className="sm:hidden flex flex-col items-end space-y-2">
-                        <div className="flex gap-2">
-                          {member.presentDates.includes(
-                            selectedDate.toLocaleDateString()
-                          ) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                              size="icon"
-                            >
-                              <Check />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "present")
-                              }
-                              size="icon"
-                            >
-                              <Check />
-                            </Button>
-                          )}
-                          {member.lateDates.includes(
-                            selectedDate.toLocaleDateString()
-                          ) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                              size="icon"
-                            >
-                              <Clock />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "late")
-                              }
-                              size="icon"
-                            >
-                              <Clock />
-                            </Button>
-                          )}
-                          {member.absentDates.includes(
-                            selectedDate.toLocaleDateString()
-                          ) ? (
-                            <Button
-                              variant="outline"
-                              className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                              size="icon"
-                            >
-                              <X />
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
-                              onClick={() =>
-                                updateAttendance(member._id, "absent")
-                              }
-                              size="icon"
-                            >
-                              <X />
-                            </Button>
-                          )}
+                        <div className="sm:hidden flex flex-col items-end space-y-2">
+                          <div className="flex gap-2">
+                            {isPresent ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-green-500 bg-green-500 hover:bg-green-500 hover:text-white dark:text-white dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                                size="icon"
+                              >
+                                <Check />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white dark:text-green-500 dark:border-green-500 dark:hover:bg-green-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "present")
+                                }
+                                size="icon"
+                              >
+                                <Check />
+                              </Button>
+                            )}
+                            {isLate ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-yellow-500 bg-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-white dark:border-yellow-500 dark:bg-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                                size="icon"
+                              >
+                                <Clock />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-yellow-500 border-yellow-500 hover:bg-yellow-500 hover:text-white dark:text-yellow-500 dark:border-yellow-500 dark:hover:bg-yellow-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "late")
+                                }
+                                size="icon"
+                              >
+                                <Clock />
+                              </Button>
+                            )}
+                            {isAbsent ? (
+                              <Button
+                                variant="outline"
+                                className="text-white border-red-500 bg-red-500 hover:bg-red-500 hover:text-white dark:text-white dark:border-red-500 dark:bg-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                                size="icon"
+                              >
+                                <X />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                className="text-red-500 border-red-500 hover:bg-red-500 hover:text-white dark:text-red-500 dark:border-red-500 dark:hover:bg-red-500 dark:hover:text-white"
+                                onClick={() =>
+                                  updateAttendance(member._id, "absent")
+                                }
+                                size="icon"
+                              >
+                                <X />
+                              </Button>
+                            )}
+                          </div>
+                          <button
+                            className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                            onClick={() =>
+                              updateAttendance(member._id, "unmarked")
+                            }
+                          >
+                            Clear
+                          </button>
                         </div>
-                        <button
-                          className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
-                          onClick={() =>
-                            updateAttendance(member._id, "unmarked")
-                          }
-                        >
-                          Clear
-                        </button>
                       </div>
-                    </div>
-                  </Card>
-                ))
+                    </Card>
+                  );
+                })
               )}
             </div>
 
@@ -613,7 +615,7 @@ export default function Attendance() {
                         {inspectedMember?.presentDates.map((date) => {
                           return (
                             <div key={date} className="py-1">
-                              {date}
+                              {formatDisplayDate(date)}
                             </div>
                           );
                         })}
@@ -627,7 +629,7 @@ export default function Attendance() {
                         {inspectedMember?.lateDates.map((date) => {
                           return (
                             <div key={date} className="py-1">
-                              {date}
+                              {formatDisplayDate(date)}
                             </div>
                           );
                         })}
@@ -641,7 +643,7 @@ export default function Attendance() {
                         {inspectedMember?.absentDates.map((date) => {
                           return (
                             <div key={date} className="py-1">
-                              {date}
+                              {formatDisplayDate(date)}
                             </div>
                           );
                         })}
